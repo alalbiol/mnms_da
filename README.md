@@ -1,24 +1,34 @@
 # Medical Image Problems Backbone
 
+Dataset specifications.
+
+|            | Siemens | Philips | GE | Canon | Total |
+|:----------:|:-------:|:-------:|:--:|:-----:|:-----:|
+|    Label   |    A    |    B    |  C |   D   |       |
+|   Centres  |    1    |  2 & 3  |  4 |   5   |       |
+|  Training  |    75   | 50 & 25 | 25 |   0   |  175  |
+| Validation |    4    |  5 & 5  | 10 |   10  |   34  |
+|   Testing  |    16   | 19 & 21 | 40 |   40  |  136  |
+|   Overall  |    95   | 74 & 51 | 75 |   50  |  345  |
+
+Training data for GE Vendor are unlabeled.
+
 ### Requirements
 
 Pytoch >= 1.6 
 
-
-### Guidelines
-Following guidelines should be followed to correct performance:
-
-  - Datasets have to return dictionaries with:
-    - Training dataloader at least 1.'image' and 2.'label' and 3.'original_mask' entries and 'num_classes' and 'class_to_cat' attributes
-    - num_classes should be 1 (no background) for single class segmentation or the number of classes + 1 (background)
-    - when multiclass and average metrics and a class at class_to_cat named 'Mean' or as you prefer
-    - Validation dataloader at least 1.'image', 2.'original_img', 3.'original_mask', 4.'img_id' entries
-  - If you want to load checkpoint unfreezed set defrost_epoch param to 0 
-  - In segmentation background class is equals to label 0
-  - You can use --notify to send you a slack message to 'experiments' channel. Set envionment variable with slack token. How can create slack token [here](https://github.com/MarioProjects/Python-Slack-Logging):
-  ```shell script
+```shell script
 export SLACK_TOKEN='you_slack_token'
 ```
+
+#### Data Preparation
+```shell
+./scripts/mms2d.sh only_data
+python3 tools/nifti2slices.py --data_path data/MMs
+python3 tools/testgt2phases.py
+```
+
+### Guidelines
 
 *MMs dataset naming*:
   - `_full` Get all volumes (not only segmented 'ED' and 'ES' phases volumes).
@@ -29,10 +39,3 @@ export SLACK_TOKEN='you_slack_token'
   
 ### ToDo
 
-- Valores de distancias infinitos (Hausdorff, ASSD)?
-- Ejemplos de uso: classification.sh
-- Redes: classification y segmentation
-- Método report para guardar metricas en csv de: 
-  - Por pacientes par analisis de errores
-  
-- Probar problemas classification multiclase y una clase  

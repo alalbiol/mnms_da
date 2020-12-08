@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e74aa284-0ca1-4a3d-b39d-f37e6389a162" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/neural.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/neural.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,6 +37,7 @@
       <workItem from="1607362495106" duration="16000" />
       <workItem from="1607432010678" duration="607000" />
       <workItem from="1607432755578" duration="27000" />
+      <workItem from="1607450076504" duration="483000" />
     </task>
     <task id="LOCAL-00001" summary="fix">
       <created>1607432585436</created>

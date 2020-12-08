@@ -18,7 +18,7 @@ else
   echo "MMs data found at 'data' directory!"
 fi
 
-# Only download the data argument ./tests/segmentation/mms2d.sh only_data
+# Only download the data argument ./scripts/mms2d.sh only_data
 if [[ $1 == "only_data" ]]
 then
   exit
