@@ -239,7 +239,7 @@ def calculate_loss(y_true, y_pred, criterion, weights_criterion, multiclass_crit
         # Case Multiclass criterions
         multiclass_indices = [i for i, x in enumerate(multiclass_criterion) if x]
         for indx in multiclass_indices:
-            loss += weights_criterion[indx] * criterion[indx](y_pred, y_true)
+            loss += weights_criterion[indx] * criterion[indx](y_pred.float(), torch.squeeze(y_true.long()))
 
         # Single class criterions => calculate criterions per class
         singleclass_indices = [i for i, x in enumerate(multiclass_criterion) if not x]
