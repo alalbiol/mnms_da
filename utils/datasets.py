@@ -109,7 +109,7 @@ class MMs2DDataset(Dataset):
         image = np.load(img_path)
 
         mask = None
-        if not(self.partition == "Training" and not df_entry["Labeled"]):
+        if not (self.partition == "Training" and not df_entry["Labeled"]):
             mask_path = os.path.join(
                 self.base_dir, self.partition, labeled_info, external_code,
                 f"{external_code}_sa_gt_slice{c_slice}_phase{c_phase}.npy"
@@ -128,8 +128,8 @@ class MMs2DDataset(Dataset):
         mask = torch.from_numpy(np.expand_dims(mask, 0)).float() if mask is not None else None
 
         return {
-            "img_id": img_id, "image": image, "label": mask, "phase": c_phase,
-            "original_img": original_image, "original_mask": original_mask, "external_code": external_code
+            "img_id": img_id, "image": image, "label": mask,
+            "original_img": original_image, "original_mask": original_mask
         }
 
 
@@ -253,6 +253,7 @@ class MMsSubmissionDataset(Dataset):
             es_volume = self.add_volume_depth_channels(es_volume)
 
         return [ed_volume, es_volume, affine, header, initial_shape, str(external_code), original_ed, original_es]
+
 
 def find_values(string, label, label_type):
     """

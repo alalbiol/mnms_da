@@ -311,37 +311,6 @@ def val_step(val_loader, model, val_metrics, generated_overlays=1, overlays_path
     return val_metrics
 
 
-def test_step(test_loader, model, test_metrics, generated_overlays=1, overlays_path="", preds_dir=""):
-    if generated_overlays != 1 and overlays_path != "":
-        os.makedirs(overlays_path, exist_ok=True)
-
-    model.eval()
-    with torch.no_grad():
-        for batch_indx, batch in enumerate(test_loader):
-            img_id, phase, affine, header = batch["img_id"], batch["phase"], batch["affine"], batch["header"]
-            external_code = batch["external_code"]
-            image = batch["image"].cuda()
-            prob_pred = model(image)
-            original_masks = batch["original_mask"]
-
-            if torch.is_tensor(batch["original_img"]):
-                original_img = batch["original_img"].data.cpu().numpy()
-            else:  # list of numpy array (generally when different sizes of original imgs)
-                original_img = batch["original_img"]
-
-            test_metrics.record(prob_pred, original_masks, original_img, generated_overlays, overlays_path, img_id)
-
-            h, w = original_masks[0].shape
-            volume_shape = (h, w, len(image))  # (height, width, volume slices)
-            pred = binarize_volume_prediction(prob_pred, volume_shape)  # [slices, height, width]
-            pred = pred.transpose(1, 2, 0)  # [height, width, slices]
-
-            save_nii(os.path.join(preds_dir, f"{external_code}_sa_{phase}.nii.gz"), pred, affine, header)
-
-    test_metrics.update()
-    return test_metrics
-
-
 def finish_swa(swa_model, train_loader, val_loader, args):
     if args.swa_start == -1:  # If swa was not used, do not perform nothing
         return
