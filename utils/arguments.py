@@ -67,18 +67,11 @@ parser.add_argument(
     choices=['padd', 'resize']
 )
 
-parser.add_argument(
-    '--notify', action='store_true', help='If send slack message when finish. Need environment variable SLACK_TOKEN'
-)
-
 parser.add_argument('--selected_class', type=str, default="", help='If there is a model checkpoint to load')
 
 args = parser.parse_args()
 
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-
-if args.notify and os.environ.get('SLACK_TOKEN') is None:
-    assert False, "Please set the environment variable SLACK_TOKEN if you want Slack notifications."
 
 if args.output_dir == "":
     assert False, "Please set an output directory"

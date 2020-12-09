@@ -66,6 +66,3 @@ if __name__ == "__main__":
                 args.generated_overlays -= 1
 
     print("Finish!")
-
-    if args.notify:
-        slack_message(message=f"{args.dataset.upper()} EVALUATION finished!", channel="experiments")

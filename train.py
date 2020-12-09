@@ -77,6 +77,3 @@ print("\nBest Validation Results:")
 val_metrics.report_best()
 
 finish_swa(swa_model, train_loader, val_loader, args)
-
-if args.notify:
-    slack_message(message=f"{args.dataset.upper()} experiments finished!", channel="experiments")

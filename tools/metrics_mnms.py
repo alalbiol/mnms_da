@@ -319,7 +319,7 @@ def metrics_slice(img_gt, img_pred, voxel_size):
     return metrics(img_gt, img_pred, voxel_size), res_zs
 
 
-def compute_metrics_on_files(path_gt, path_pred):
+def compute_metrics_on_files(path_gt, path_pred, remove_pred):
     """
     Function to give the metrics for two files
 
@@ -331,6 +331,9 @@ def compute_metrics_on_files(path_gt, path_pred):
 
     path_pred: string
     Path of the predicted image.
+
+    remove_pred: bool
+    Whether remove pred or not.
     """
     gt, _, header = load_nii(path_gt)
     pred, _, _ = load_nii(path_pred)
@@ -345,19 +348,26 @@ def compute_metrics_on_files(path_gt, path_pred):
     print(formatting.format(*HEADER))
     print(formatting.format(name, *res))
 
+    # remove/clean predictions if needed
+    if remove_pred:
+        os.remove(path_pred)
 
-def compute_metrics_on_directories(dir_gt, dir_pred):
+
+def compute_metrics_on_directories(dir_gt, dir_pred, remove_preds):
     """
     Function to generate a csv file for each images of two directories.
 
     Parameters
     ----------
 
-    path_gt: string
+    dir_gt: string
     Directory of the ground truth segmentation maps.
 
-    path_pred: string
+    dir_pred: string
     Directory of the predicted segmentation maps.
+
+    remove_preds: bool
+    Whether remove predictions or not.
     """
     info = pd.read_csv(os.path.join("data/MMs", 'volume_info.csv'))
     lst_pred = sorted(glob.glob(os.path.join(dir_pred, '**', '*sa_E?.nii.gz'), recursive=True), key=natural_order)
@@ -417,6 +427,11 @@ def compute_metrics_on_directories(dir_gt, dir_pred):
     adf = pd.read_csv(os.path.join(dir_pred, "results_{}.csv".format(time.strftime("%Y%m%d_%H%M"))))
     adf.sample(frac=1).iloc[:, 1:].to_csv(os.path.join(dir_pred, "results_anonymized.csv"), index=False)
 
+    # remove/clean predictions if needed
+    if remove_preds:
+        for pred_path in lst_pred:
+            os.remove(pred_path)
+
     return 1
 
     aux = ['', ' std']
@@ -452,14 +467,14 @@ def compute_metrics_on_directories(dir_gt, dir_pred):
     dfs.to_csv(os.path.join(dir_pred, "results_summary_{}.csv".format(time.strftime("%Y%m%d_%H%M%S"))), index=False)
 
 
-def main(path_gt, path_pred):
+def main(path_gt, path_pred, remove_preds):
     """
     Main function to select which method to apply on the input parameters.
     """
     if os.path.isfile(path_gt) and os.path.isfile(path_pred):
-        compute_metrics_on_files(path_gt, path_pred)
+        compute_metrics_on_files(path_gt, path_pred, remove_preds)
     elif os.path.isdir(path_gt) and os.path.isdir(path_pred):
-        compute_metrics_on_directories(path_gt, path_pred)
+        compute_metrics_on_directories(path_gt, path_pred, remove_preds)
     else:
         raise ValueError("The paths given needs to be two directories or two files.")
 
@@ -538,5 +553,6 @@ if __name__ == "__main__":
         description="Script to compute M&Ms challenge metrics.")
     parser.add_argument("--GT_IMG", type=str, help="Ground Truth image or folder")
     parser.add_argument("--PRED_IMG", type=str, help="Predicted image or folder")
+    parser.add_argument('--REMOVE_PREDS', action='store_true', help='Whether remove or not volume predictions')
     args = parser.parse_args()
-    main(args.GT_IMG, args.PRED_IMG)
+    main(args.GT_IMG, args.PRED_IMG, args.REMOVE_PREDS)
