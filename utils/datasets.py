@@ -3,7 +3,6 @@ import torch
 import os
 import numpy as np
 from torch.utils.data import Dataset
-from skimage import io
 import albumentations
 import copy
 import pandas as pd
@@ -55,6 +54,7 @@ class MMs2DDataset(Dataset):
 
         data = data.reset_index(drop=True)
         self.data = data
+        self.data_meta = pd.read_csv(os.path.join(self.base_dir, "volume_info_statistics.csv"))
 
         self.add_depth = add_depth
         self.normalization = normalization
@@ -96,6 +96,7 @@ class MMs2DDataset(Dataset):
         c_phase = df_entry["Phase"]
         c_vendor = df_entry["Vendor"]
         c_centre = df_entry["Centre"]
+        meta_entry = self.data_meta.loc[self.data_meta["External code"] == external_code]
         img_id = f"{external_code}_slice{c_slice}_phase{c_phase}_vendor{c_vendor}_centre{c_centre}"
 
         labeled_info = ""
@@ -120,7 +121,18 @@ class MMs2DDataset(Dataset):
         original_mask = copy.deepcopy(mask)
 
         image, mask = data_utils.apply_augmentations(image, self.transform, self.img_transform, mask)
-        image = data_utils.apply_normalization(image, self.normalization)
+
+        if self.normalization == "standardize_full_vol":
+            mean = float(meta_entry["Vol_mean"])
+            std = float(meta_entry["Vol_std"])
+            image = data_utils.apply_normalization(image, self.normalization, mean=mean, std=std)
+        elif self.normalization == "standardize_phase":
+            mean = float(meta_entry[f"{c_phase}l_mean"])
+            std = float(meta_entry[f"{c_phase}_std"])
+            image = data_utils.apply_normalization(image, self.normalization, mean=mean, std=std)
+        else:
+            image = data_utils.apply_normalization(image, self.normalization)
+
         image = torch.from_numpy(np.expand_dims(image, axis=0))
 
         if self.add_depth:
@@ -141,7 +153,6 @@ class MMsSubmissionDataset(Dataset):
     def __init__(self, transform, img_transform, add_depth=False, normalization="standardize",
                  data_relative_path=""):
         """
-        :param input_dir: (string) Path with volume folders (usually where info.csv is located)
         :param transform: (list) List of albumentations applied to image and mask
         :param img_transform: (list) List of albumentations applied to image only
         :param add_depth: (bool) If apply image transformation 1 to 3 channels or not

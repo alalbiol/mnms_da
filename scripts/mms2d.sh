@@ -1,9 +1,27 @@
 #!/bin/bash
 
+# Only download the data argument ./scripts/mms2d.sh only_meta
+if [[ $1 == "only_meta" ]]
+then
+  wget -nv --load-cookies /tmp/cookies.txt \
+    "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt \
+    --keep-session-cookies --no-check-certificate \
+    'https://docs.google.com/uc?export=download&id=12XskEcHOo7Qg1YsDMm8jzpS7sZwpGT7R' \
+    -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=12XskEcHOo7Qg1YsDMm8jzpS7sZwpGT7R" \
+    -O MMs_Meta.tar.gz && rm -rf /tmp/cookies.txt
+  mkdir -p data
+  tar -zxf MMs_Meta.tar.gz  -C data/MMs
+  rm MMs_Meta.tar.gz
+
+  echo "Done!"
+  exit
+fi
+
 # Check if MMs data is available, if not download
 if [ ! -d "data/MMs" ]
 then
     echo "MMs data not found at 'data' directory. Downloading..."
+
     wget -nv --load-cookies /tmp/cookies.txt \
       "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt \
       --keep-session-cookies --no-check-certificate \
@@ -13,6 +31,17 @@ then
     mkdir -p data
     tar -zxf MMs_Oficial.tar.gz  -C data/
     rm MMs_Oficial.tar.gz
+
+    wget -nv --load-cookies /tmp/cookies.txt \
+      "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt \
+      --keep-session-cookies --no-check-certificate \
+      'https://docs.google.com/uc?export=download&id=12XskEcHOo7Qg1YsDMm8jzpS7sZwpGT7R' \
+      -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=12XskEcHOo7Qg1YsDMm8jzpS7sZwpGT7R" \
+      -O MMs_Meta.tar.gz && rm -rf /tmp/cookies.txt
+    mkdir -p data
+    tar -zxf MMs_Meta.tar.gz  -C data/MMs
+    rm MMs_Meta.tar.gz
+
     echo "Done!"
 else
   echo "MMs data found at 'data' directory!"
@@ -57,7 +86,7 @@ optimizer="adam"
 # "scale" - "optical_distortion" - "coarse_dropout" or "cutout" - "downscale"
 data_augmentation="mms2d"
 
-normalization="standardize"  # reescale - standardize
+normalization="standardize"  # reescale - standardize - standardize_full_vol - standardize_phase
 mask_reshape_method="padd"  # padd - resize
 
 generated_overlays=32

@@ -60,11 +60,13 @@ def add_depth_channels(image_tensor):
     return image
 
 
-def apply_normalization(image, normalization_type):
+def apply_normalization(image, normalization_type, mean=None, std=None):
     """
     https://www.statisticshowto.com/normalized/
     :param image: numpy image
     :param normalization_type: one of defined normalizations
+    :param mean: mean used for standardization. If not specified calculated over sample
+    :param std: std used for standardization. If not specified calculated over sample
     :return: normalized image
     """
     if normalization_type == "none":
@@ -75,8 +77,10 @@ def apply_normalization(image, normalization_type):
         image = (image - image_min) / (image_max - image_min)
         return image
     elif normalization_type == "standardize":
-        mean = np.mean(image)
-        std = np.std(image)
+        if mean is None:
+            mean = np.mean(image)
+        if std is None:
+            std = np.std(image)
         image = image - mean
         image = image / std
         return image
