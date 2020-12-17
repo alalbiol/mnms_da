@@ -3,7 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="e74aa284-0ca1-4a3d-b39d-f37e6389a162" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/mms2d_data_analysis.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/mms2d_data_statistics.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/tools/mms2d_data_statistics.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/arguments.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/arguments.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/data_augmentation.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/data_augmentation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/dataload.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/dataload.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/datasets.py" afterDir="false" />
     </list>
@@ -50,6 +55,15 @@
       <workItem from="1607455135021" duration="1710000" />
       <workItem from="1607497719335" duration="1529000" />
       <workItem from="1607514545679" duration="2428000" />
+      <workItem from="1607959063486" duration="1309000" />
+      <workItem from="1608027707011" duration="604000" />
+      <workItem from="1608032369051" duration="2530000" />
+      <workItem from="1608053539198" duration="3494000" />
+      <workItem from="1608107735509" duration="2888000" />
+      <workItem from="1608127142395" duration="612000" />
+      <workItem from="1608193664311" duration="393000" />
+      <workItem from="1608203897314" duration="462000" />
+      <workItem from="1608214103653" duration="680000" />
     </task>
     <task id="LOCAL-00001" summary="fix">
       <created>1607432585436</created>
@@ -95,5 +109,24 @@
     <MESSAGE value="clean" />
     <MESSAGE value="notify when finish" />
     <option name="LAST_COMMIT_MESSAGE" value="notify when finish" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/datasets.py</url>
+          <line>108</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/datasets.py</url>
+          <line>107</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/mnms_da$.coverage" NAME=" Coverage Results" MODIFIED="1608214722489" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>

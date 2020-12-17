@@ -1,13 +1,4 @@
 import nibabel as nib
-import albumentations
-import numpy as np
-import os
-import pandas as pd
-import torch
-import copy
-from sklearn.model_selection import GroupKFold
-from torch.utils.data import Dataset, DataLoader
-from utils.data_augmentation import common_test_augmentation
 import pydicom
 from PIL import Image
 from utils.datasets import *
@@ -60,20 +51,32 @@ def add_depth_channels(image_tensor):
     return image
 
 
-def apply_normalization(image, normalization_type, mean=None, std=None):
+def add_volume_depth_channels(list_images):
+    b, d, h, w = list_images.shape
+    new_list_images = torch.empty((b, 3, h, w))
+    for indx, image in enumerate(list_images):
+        new_list_images[indx, ...] = data_utils.add_depth_channels(image)
+    return new_list_images
+
+
+def apply_normalization(image, normalization_type, mean=None, std=None, image_min=None, image_max=None):
     """
     https://www.statisticshowto.com/normalized/
     :param image: numpy image
     :param normalization_type: one of defined normalizations
     :param mean: mean used for standardization. If not specified calculated over sample
     :param std: std used for standardization. If not specified calculated over sample
+    :param image_min: Min values used for reescale. If not specified calculated over sample
+    :param image_max: Max values used for reescale. If not specified calculated over sample
     :return: normalized image
     """
     if normalization_type == "none":
         return image
     elif normalization_type == "reescale":
-        image_min = image.min()
-        image_max = image.max()
+        if image_min is None:
+            image_min = image.min()
+        if image_max is None:
+            image_max = image.max()
         image = (image - image_min) / (image_max - image_min)
         return image
     elif normalization_type == "standardize":
@@ -133,7 +136,7 @@ def apply_augmentations(image, transform, img_transform, mask=None):
     return image, mask
 
 
-def apply_volume_augmentations(list_images, transform, img_transform):
+def apply_volume_2Daugmentations(list_images, transform, img_transform, list_masks=None):
     """
     Apply same augmentations to volume images
     :param list_images: (array) [num_images, height, width] Images to transform
@@ -148,18 +151,28 @@ def apply_volume_augmentations(list_images, transform, img_transform):
     if transform:
         # All augmentations applied in same proportion and values
         imgs_ids = ["image"] + ["image{}".format(idx + 2) for idx in range(len(list_images) - 1)]
+        if list_masks is not None:
+            masks_ids = ["mask"] + ["mask{}".format(idx + 2) for idx in range(len(list_images) - 1)]
+
         aug_args = dict(zip(imgs_ids, list_images))
+        aug_args.update(dict(zip(masks_ids, list_masks)))
 
         pair_ids_imgs = ["image{}".format(idx + 2) for idx in range(len(list_images) - 1)]
         base_id_imgs = ["image"] * len(pair_ids_imgs)
+
+        pair_ids_masks = ["mask{}".format(idx + 2) for idx in range(len(list_masks) - 1)]
+        base_id_masks = ["mask"] * len(pair_ids_masks)
+
         list_additional_targets = dict(zip(pair_ids_imgs, base_id_imgs))
+        list_additional_targets.update(dict(zip(pair_ids_masks, base_id_masks)))
 
         volumetric_aug = albumentations.Compose(transform, additional_targets=list_additional_targets)
         augmented = volumetric_aug(**aug_args)
 
         list_images = np.stack([augmented[img] for img in imgs_ids])
+        list_masks = np.stack([augmented[mask] for mask in masks_ids])
 
-    return list_images
+    return list_images, list_masks
 
 
 def add_volume_depth_channels(list_images):

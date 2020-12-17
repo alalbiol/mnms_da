@@ -28,6 +28,7 @@ parser.add_argument('--dataset', type=str, help='Which dataset use')
 parser.add_argument('--defrost_epoch', type=int, default=-1, help='Number of epochs to defrost the model')
 parser.add_argument('--batch_size', type=int, default=64, help='Batch Size for training')
 parser.add_argument('--data_augmentation', type=str, help='Apply data augmentations at train time')
+parser.add_argument('--rand_histogram_matching', action='store_true', help='Apply random histogram matching')
 parser.add_argument('--img_size', type=int, default=224, help='Final img squared size')
 parser.add_argument('--crop_size', type=int, default=224, help='Center crop squared size')
 

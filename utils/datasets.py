@@ -1,3 +1,4 @@
+import random
 from torch.utils.data import DataLoader
 import torch
 import os
@@ -6,6 +7,7 @@ from torch.utils.data import Dataset
 import albumentations
 import copy
 import pandas as pd
+from skimage.exposure import match_histograms
 
 import utils.dataload as data_utils
 from tools.metrics_mnms import load_nii
@@ -13,12 +15,12 @@ from tools.metrics_mnms import load_nii
 
 class MMs2DDataset(Dataset):
     """
-    Dataset for Digital Retinal Images for Vessel Extraction (DRIVE) Challenge.
-    https://drive.grand-challenge.org/
+    2D Dataset
     """
 
     def __init__(self, partition, transform, img_transform, normalization="normalize", add_depth=True,
-                 is_labeled=True, centre=None, vendor=None, end_volumes=True, data_relative_path=""):
+                 is_labeled=True, centre=None, vendor=None, end_volumes=True, data_relative_path="",
+                 only_phase="", rand_histogram_matching=False):
         """
         :param partition: (string) Dataset partition in ["Training", "Validation", "Test"]
         :param transform: (list) List of albumentations applied to image and mask
@@ -30,6 +32,8 @@ class MMs2DDataset(Dataset):
         :param vendor: (string) Select by vendor label. Available ["A", "B", "C", "D"]
         :param end_volumes: (bool) Whether only include 'ED' and 'ES' phases ((to) segmented) or all
         :param data_relative_path: (string) Prepend extension to MMs data base dir
+        :param only_phase: (string) Select only phases by 'ED' or 'ES'
+        :param rand_histogram_matching: (bool) Perform random histogram matching with different vendors
         """
 
         if partition not in ["Training", "Validation", "Testing"]:
@@ -51,6 +55,185 @@ class MMs2DDataset(Dataset):
 
         if end_volumes:  # Get only volumes in 'ED' and 'ES' phases (segmented)
             data = data.loc[(data["ED"] == data["Phase"]) | (data["ES"] == data["Phase"])]
+
+        if only_phase != "":
+            if only_phase not in ["ED", "ES"]:
+                assert False, f"Only ED and ES phases available (selected '{only_phase}')"
+            data = data.loc[(data[only_phase] == data["Phase"])]
+
+        data = data.reset_index(drop=True)
+        self.data = data
+        self.data_meta = pd.read_csv(os.path.join(self.base_dir, "volume_info_statistics.csv"))
+
+        self.add_depth = add_depth
+        self.normalization = normalization
+        self.transform = albumentations.Compose(transform)
+        self.img_transform = albumentations.Compose(img_transform)
+
+        self.rand_histogram_matching = rand_histogram_matching
+        if self.rand_histogram_matching:
+            data = pd.read_csv(os.path.join(self.base_dir, "slices_info.csv"))
+            self.hist_match_df = data.loc[data["Partition"] == partition]
+
+    def __len__(self):
+        return len(self.data)
+
+    @staticmethod
+    def custom_collate(batch):
+        """
+
+        Args:
+            batch: list of dataset items (from __getitem__). In this case batch is a list of dicts with
+                   key image, and depending of validation or train different keys
+
+        Returns:
+
+        """
+        # We have to modify "original_mask" as has different shapes
+        batch_keys = list(batch[0].keys())
+        res = {bkey: [] for bkey in batch_keys}
+        for belement in batch:
+            for bkey in batch_keys:
+                res[bkey].append(belement[bkey])
+
+        for bkey in batch_keys:
+            if bkey == "original_mask" or bkey == "original_img" or bkey == "img_id":
+                continue  # We wont stack over original_mask...
+            res[bkey] = torch.stack(res[bkey]) if None not in res[bkey] else None
+
+        return res
+
+    def histogram_matching_augmentation(self, image, original_vendor):
+        # 40% of the time perform histogram matching with different vendor slice
+        if self.partition == "Training" and self.rand_histogram_matching and (random.random() < 0.4):
+            rand_hist_entry = self.hist_match_df[self.hist_match_df["Vendor"] != original_vendor].sample(n=1).iloc[0]
+            external_code = rand_hist_entry["External code"]
+            c_slice = rand_hist_entry["Slice"]
+            c_phase = rand_hist_entry["Phase"]
+            c_vendor = rand_hist_entry["Vendor"]
+            labeled_info = "Unlabeled" if c_vendor == "C" else "Labeled"
+            reference_img_path = os.path.join(
+                self.base_dir, self.partition, labeled_info, external_code,
+                f"{external_code}_sa_slice{c_slice}_phase{c_phase}.npy"
+            )
+            reference = np.load(reference_img_path)
+            image = match_histograms(image, reference, multichannel=False)
+        return image
+
+    def __getitem__(self, idx):
+        df_entry = self.data.loc[idx]
+        external_code = df_entry["External code"]
+        c_slice = df_entry["Slice"]
+        c_phase = df_entry["Phase"]
+        if c_phase == df_entry["ED"]:
+            c_phase_str = "ED"
+        elif c_phase == df_entry["ES"]:
+            c_phase_str = "ES"
+        else:
+            assert False, "Not in ED or ES phases?!"
+        c_vendor = df_entry["Vendor"]
+        c_centre = df_entry["Centre"]
+        meta_entry = self.data_meta.loc[self.data_meta["External code"] == external_code]
+        img_id = f"{external_code}_slice{c_slice}_phase{c_phase}_vendor{c_vendor}_centre{c_centre}"
+
+        labeled_info = ""
+        if self.partition == "Training":
+            labeled_info = "Labeled" if df_entry["Labeled"] else "Unlabeled"
+
+        img_path = os.path.join(
+            self.base_dir, self.partition, labeled_info, external_code,
+            f"{external_code}_sa_slice{c_slice}_phase{c_phase}.npy"
+        )
+        image = np.load(img_path)
+        original_image = copy.deepcopy(image)
+
+        image = self.histogram_matching_augmentation(image, c_vendor)
+
+        mask = None
+        if not (self.partition == "Training" and not df_entry["Labeled"]):
+            mask_path = os.path.join(
+                self.base_dir, self.partition, labeled_info, external_code,
+                f"{external_code}_sa_gt_slice{c_slice}_phase{c_phase}.npy"
+            )
+            mask = np.load(mask_path)
+        original_mask = copy.deepcopy(mask)
+
+        image, mask = data_utils.apply_augmentations(image, self.transform, self.img_transform, mask)
+
+        if self.normalization == "standardize_full_vol":
+            mean = float(meta_entry["Vol_mean"])
+            std = float(meta_entry["Vol_std"])
+            image = data_utils.apply_normalization(image, "standardize", mean=mean, std=std)
+        elif self.normalization == "standardize_phase":
+            mean = float(meta_entry[f"{c_phase_str}_mean"])
+            std = float(meta_entry[f"{c_phase_str}_std"])
+            image = data_utils.apply_normalization(image, "standardize", mean=mean, std=std)
+        elif self.normalization == "reescale_full_vol":
+            phase_max = float(meta_entry[f"Vol_max"])
+            phase_min = float(meta_entry[f"Vol_min"])
+            image = data_utils.apply_normalization(image, "reescale", image_max=phase_max, image_min=phase_min)
+        elif self.normalization == "reescale_phase":
+            phase_max = float(meta_entry[f"{c_phase_str}_max"])
+            phase_min = float(meta_entry[f"{c_phase_str}_min"])
+            image = data_utils.apply_normalization(image, "reescale", image_max=phase_max, image_min=phase_min)
+        else:
+            image = data_utils.apply_normalization(image, self.normalization)
+
+        image = torch.from_numpy(np.expand_dims(image, axis=0))
+
+        if self.add_depth:
+            image = data_utils.add_depth_channels(image)
+        mask = torch.from_numpy(np.expand_dims(mask, 0)).float() if mask is not None else None
+
+        return {
+            "img_id": img_id, "image": image, "label": mask,
+            "original_img": original_image, "original_mask": original_mask
+        }
+
+
+class MMs3DDataset(Dataset):
+    """
+    2D Dataset
+    """
+
+    def __init__(self, partition, transform, img_transform, normalization="normalize", add_depth=True,
+                 is_labeled=True, centre=None, vendor=None, end_volumes=True, data_relative_path="",
+                 only_phase=""):
+        """
+        :param partition: (string) Dataset partition in ["Training", "Validation", "Test"]
+        :param transform: (list) List of albumentations applied to image and mask
+        :param img_transform: (list) List of albumentations applied to image only
+        :param normalization: (str) Normalization mode. One of 'reescale', 'standardize', 'global_standardize'
+        :param add_depth: (bool) Whether transform or not 1d slices to 3 channels images
+        :param is_labeled: (bool) Dataset partition in ["Training", "Validation", "Test"]
+        :param centre: (int) Select by centre label. Available [1, 2, 3, 4, 5]
+        :param vendor: (string) Select by vendor label. Available ["A", "B", "C", "D"]
+        :param end_volumes: (bool) Whether only include 'ED' and 'ES' phases ((to) segmented) or all
+        :param data_relative_path: (string) Prepend extension to MMs data base dir
+        :param only_phase: (string) Select only phases by 'ED' or 'ES'
+        """
+
+        if partition not in ["Training", "Validation", "Testing"]:
+            assert False, "Unknown mode '{}'".format(partition)
+
+        self.base_dir = os.path.join(data_relative_path, "data/MMs")
+        self.partition = partition
+        self.img_channels = 3
+        self.class_to_cat = {1: "LV", 2: "MYO", 3: "RV", 4: "Mean"}
+        self.include_background = False
+        self.num_classes = 4  # background - LV - MYO - RV
+
+        data = pd.read_csv(os.path.join(self.base_dir, "detailed_volume_info.csv"))
+        data = data.loc[(data["Partition"] == partition) & (data["Labeled"] == is_labeled)]
+        if vendor is not None:
+            data = data.loc[data['Vendor'].isin(vendor)]
+        if centre is not None:
+            data = data.loc[data['Centre'].isin(centre)]
+
+        if only_phase != "":
+            if only_phase not in ["ED", "ES"]:
+                assert False, f"Only ED and ES phases available (selected '{only_phase}')"
+            data = data.loc[data["PhaseType"] == only_phase]
 
         data = data.reset_index(drop=True)
         self.data = data
@@ -92,12 +275,10 @@ class MMs2DDataset(Dataset):
     def __getitem__(self, idx):
         df_entry = self.data.loc[idx]
         external_code = df_entry["External code"]
-        c_slice = df_entry["Slice"]
         c_phase = df_entry["Phase"]
         c_vendor = df_entry["Vendor"]
         c_centre = df_entry["Centre"]
-        meta_entry = self.data_meta.loc[self.data_meta["External code"] == external_code]
-        img_id = f"{external_code}_slice{c_slice}_phase{c_phase}_vendor{c_vendor}_centre{c_centre}"
+        img_id = f"{external_code}_phase{c_phase}_vendor{c_vendor}_centre{c_centre}"
 
         labeled_info = ""
         if self.partition == "Training":
@@ -105,39 +286,45 @@ class MMs2DDataset(Dataset):
 
         img_path = os.path.join(
             self.base_dir, self.partition, labeled_info, external_code,
-            f"{external_code}_sa_slice{c_slice}_phase{c_phase}.npy"
+            f"{external_code}_sa.nii.gz"
         )
-        image = np.load(img_path)
+        image, affine, header = load_nii(img_path)
+        vol_mean, vol_std, vol_max, vol_min = image.mean(), image.std(), image.max(), image.min()
+        image = image[..., c_phase].transpose(2, 0, 1)
 
         mask = None
         if not (self.partition == "Training" and not df_entry["Labeled"]):
             mask_path = os.path.join(
                 self.base_dir, self.partition, labeled_info, external_code,
-                f"{external_code}_sa_gt_slice{c_slice}_phase{c_phase}.npy"
+                f"{external_code}_sa_gt.nii.gz"
             )
-            mask = np.load(mask_path)
+            mask, mask_affine, mask_header = load_nii(mask_path)
+            mask = mask[..., c_phase].transpose(2, 0, 1)
 
         original_image = copy.deepcopy(image)
         original_mask = copy.deepcopy(mask)
 
-        image, mask = data_utils.apply_augmentations(image, self.transform, self.img_transform, mask)
+        image, mask = data_utils.apply_volume_2Daugmentations(image, self.transform, self.img_transform, mask)
 
         if self.normalization == "standardize_full_vol":
-            mean = float(meta_entry["Vol_mean"])
-            std = float(meta_entry["Vol_std"])
-            image = data_utils.apply_normalization(image, self.normalization, mean=mean, std=std)
+            image = data_utils.apply_normalization(image, "standardize", mean=vol_mean, std=vol_std)
         elif self.normalization == "standardize_phase":
-            mean = float(meta_entry[f"{c_phase}l_mean"])
-            std = float(meta_entry[f"{c_phase}_std"])
-            image = data_utils.apply_normalization(image, self.normalization, mean=mean, std=std)
+            image = data_utils.apply_normalization(image, "standardize", mean=image.mean(), std=image.std())
+        elif self.normalization == "reescale_full_vol":
+            image = data_utils.apply_normalization(image, "reescale", image_max=vol_max, image_min=vol_min)
+        elif self.normalization == "reescale_phase":
+            image = data_utils.apply_normalization(image, "reescale", image_max=image.max(), image_min=image.min())
         else:
             image = data_utils.apply_normalization(image, self.normalization)
 
-        image = torch.from_numpy(np.expand_dims(image, axis=0))
+        # We have to stack volume as batch
+        image = np.expand_dims(image, axis=1)
+
+        image = torch.from_numpy(image)
 
         if self.add_depth:
-            image = data_utils.add_depth_channels(image)
-        mask = torch.from_numpy(np.expand_dims(mask, 0)).float() if mask is not None else None
+            image = data_utils.add_volume_depth_channels(image)
+        mask = torch.from_numpy(np.expand_dims(mask, 1)).float() if mask is not None else None
 
         return {
             "img_id": img_id, "image": image, "label": mask,
@@ -211,17 +398,30 @@ class MMsSubmissionDataset(Dataset):
 
         return list_images
 
-    def apply_volume_normalization(self, list_images):
-        for indx, image in enumerate(list_images):
-            list_images[indx, ...] = data_utils.apply_normalization(image, self.normalization)
-        return list_images
+    def apply_volume_normalization(self, list_images, volume):
 
-    def add_volume_depth_channels(self, list_images):
-        b, d, h, w = list_images.shape
-        new_list_images = torch.empty((b, 3, h, w))
-        for indx, image in enumerate(list_images):
-            new_list_images[indx, ...] = data_utils.add_depth_channels(image)
-        return new_list_images
+        if self.normalization == "standardize_full_vol":
+            mean = volume.mean()
+            std = volume.std()
+            list_images = data_utils.apply_normalization(list_images, "standardize", mean=mean, std=std)
+        elif self.normalization == "standardize_phase":
+            mean = list_images.mean()
+            std = list_images.std()
+            list_images = data_utils.apply_normalization(list_images, "standardize", mean=mean, std=std)
+        elif self.normalization == "reescale_full_vol":
+            phase_max = volume.max()
+            phase_min = volume.min()
+            list_images = data_utils.apply_normalization(list_images, "reescale", image_max=phase_max,
+                                                         image_min=phase_min)
+        elif self.normalization == "reescale_phase":
+            phase_max = list_images.max()
+            phase_min = list_images.min()
+            list_images = data_utils.apply_normalization(list_images, "reescale", image_max=phase_max,
+                                                         image_min=phase_min)
+        else:
+            for indx, image in enumerate(list_images):
+                list_images[indx, ...] = data_utils.apply_normalization(image, self.normalization)
+        return list_images
 
     def simple_collate(self, batch):
         return batch[0]
@@ -249,8 +449,8 @@ class MMsSubmissionDataset(Dataset):
         ed_volume = self.apply_volume_augmentations(ed_volume)
         es_volume = self.apply_volume_augmentations(es_volume)
 
-        ed_volume = self.apply_volume_normalization(ed_volume)
-        es_volume = self.apply_volume_normalization(es_volume)
+        ed_volume = self.apply_volume_normalization(ed_volume, volume)
+        es_volume = self.apply_volume_normalization(es_volume, volume)
 
         # We have to stack volume as batch
         ed_volume = np.expand_dims(ed_volume, axis=1)
@@ -260,8 +460,8 @@ class MMsSubmissionDataset(Dataset):
         es_volume = torch.from_numpy(es_volume)
 
         if self.add_depth:
-            ed_volume = self.add_volume_depth_channels(ed_volume)
-            es_volume = self.add_volume_depth_channels(es_volume)
+            ed_volume = data_utils.add_volume_depth_channels(ed_volume)
+            es_volume = data_utils.add_volume_depth_channels(es_volume)
 
         return [ed_volume, es_volume, affine, header, initial_shape, str(external_code), original_ed, original_es]
 
@@ -300,6 +500,7 @@ def find_values(string, label, label_type):
 
 def dataset_selector(train_aug, train_aug_img, val_aug, args, is_test=False):
     if "mms2d" in args.dataset:
+
         if is_test:
             test_dataset = MMsSubmissionDataset(
                 transform=val_aug, img_transform=[],
@@ -317,7 +518,8 @@ def dataset_selector(train_aug, train_aug_img, val_aug, args, is_test=False):
 
         train_dataset = MMs2DDataset(
             partition="Training", transform=train_aug, img_transform=train_aug_img, normalization=args.normalization,
-            add_depth=args.add_depth, is_labeled=(not unlabeled), centre=c_centre, vendor=c_vendor, end_volumes=only_end
+            add_depth=args.add_depth, is_labeled=(not unlabeled), centre=c_centre, vendor=c_vendor,
+            end_volumes=only_end, rand_histogram_matching=args.rand_histogram_matching
         )
 
         val_dataset = MMs2DDataset(

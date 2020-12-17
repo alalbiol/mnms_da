@@ -1,6 +1,8 @@
 #!/bin/bash
 
-# Only download the data argument ./scripts/mms2d.sh only_meta
+# Only download meta data --> ./scripts/mms2d.sh only_meta
+# Only download data --> ./scripts/mms2d.sh only_data
+
 if [[ $1 == "only_meta" ]]
 then
   wget -nv --load-cookies /tmp/cookies.txt \
@@ -47,7 +49,6 @@ else
   echo "MMs data found at 'data' directory!"
 fi
 
-# Only download the data argument ./scripts/mms2d.sh only_data
 if [[ $1 == "only_data" ]]
 then
   exit
@@ -62,13 +63,13 @@ problem_type="segmentation"
 #   -> small_segmentation_unet - small_segmentation_small_unet
 #      small_segmentation_extrasmall_unet - small_segmentation_nano_unet
 #   -> resnet18_pspnet_unet - resnet34_pspnet_unet
-model="resnet18_unet_scratch_scse_hypercols"
+model="resnet18_unet_scratch"
 
 img_size=224
 crop_size=224
 batch_size=32
 
-epochs=200
+epochs=170
 swa_start=130
 defrost_epoch=-1
 
@@ -76,7 +77,7 @@ defrost_epoch=-1
 # constant - steps - plateau - one_cycle_lr (max_lr) - cyclic (min_lr, max_lr, scheduler_steps)
 scheduler="steps"
 lr=0.001
-swa_lr=0.00256
+swa_lr=0.0064
 # Available optimizers:
 # adam - sgd - over9000
 optimizer="adam"
@@ -89,7 +90,7 @@ data_augmentation="mms2d"
 normalization="standardize"  # reescale - standardize - standardize_full_vol - standardize_phase
 mask_reshape_method="padd"  # padd - resize
 
-generated_overlays=32
+generated_overlays=0
 
 # Available criterions:
 # bce - bce_dice - bce_dice_ac - bce_dice_border - bce_dice_border_ce
@@ -106,7 +107,7 @@ python3 -u train.py --gpu $gpu --dataset $dataset --model_name $model --img_size
 --scheduler $scheduler --learning_rate $lr --swa_lr $swa_lr --optimizer $optimizer --criterion $criterion \
 --normalization $normalization --weights_criterion "$weights_criterion" --data_augmentation $data_augmentation \
 --output_dir "$output_dir" --metrics iou dice --problem_type $problem_type --mask_reshape_method $mask_reshape_method \
---scheduler_steps 70 100 --generated_overlays $generated_overlays --add_depth
+--scheduler_steps 70 100 --generated_overlays $generated_overlays --add_depth --rand_histogram_matching
 
 
 model_checkpoint="$output_dir/model_${model}_best_iou.pt"
@@ -116,7 +117,7 @@ python3 -u predict.py --gpu $gpu --dataset $dataset --model_name $model --img_si
 --problem_type $problem_type --mask_reshape_method $mask_reshape_method --metrics iou dice \
 --generated_overlays $generated_overlays --add_depth --model_checkpoint "$model_checkpoint"
 
-python3 -u tools/metrics_mnms.py --GT_IMG "data/MMs/Testing" --PRED_IMG "$eval_dir/test_predictions" --REMOVE_PREDS
+python3 -u tools/metrics_mnms.py --GT_IMG "data/MMs/Testing" --PRED_IMG "$eval_dir/test_predictions"  # --REMOVE_PREDS
 
 
 swa_total_epochs="$((epochs-swa_start))"
@@ -128,7 +129,7 @@ python3 -u predict.py --gpu $gpu --dataset $dataset --model_name $model --img_si
 --generated_overlays $generated_overlays --add_depth --model_checkpoint "$model_checkpoint" --swa_checkpoint
 
 
-python3 -u tools/metrics_mnms.py --GT_IMG "data/MMs/Testing" --PRED_IMG "$eval_dir/test_predictions" --REMOVE_PREDS
+python3 -u tools/metrics_mnms.py --GT_IMG "data/MMs/Testing" --PRED_IMG "$eval_dir/test_predictions"  # --REMOVE_PREDS
 
 ##################################################
 python tools/notify.py --msg "Experiments Finished"
