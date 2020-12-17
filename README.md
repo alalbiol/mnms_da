@@ -1,4 +1,4 @@
-# Medical Image Problems Backbone
+# Domain Adaptation for M&Ms Challenge
 
 Dataset specifications.
 
@@ -24,6 +24,7 @@ export SLACK_TOKEN='you_slack_token'
 #### Data Preparation
 ```shell
 ./scripts/mms2d.sh only_data
+./scripts/mms2d.sh only_meta
 python3 tools/nifti2slices.py --data_path data/MMs
 python3 tools/testgt2phases.py
 ```
