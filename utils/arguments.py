@@ -56,6 +56,9 @@ parser.add_argument(
 parser.add_argument('--criterion', type=str, default='bce', help='Criterion for training')
 parser.add_argument('--weights_criterion', type=str, default='default', help='Weights for each subcriterion')
 
+parser.add_argument('--coral', action='store_true', help='Whether apply coral loss or not')
+parser.add_argument('--weight_coral', type=float, default=0.01, help='Coral loss weight')
+
 parser.add_argument('--model_checkpoint', type=str, default="", help='If there is a model checkpoint to load')
 parser.add_argument('--swa_checkpoint', action='store_true', help='If we load the model checkpoint from SWA model')
 

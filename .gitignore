@@ -141,3 +141,6 @@ data/*
 # Results
 results/*
 !results/.gitkeep
+
+# Nifti files
+*.nii.gz

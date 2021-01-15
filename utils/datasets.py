@@ -266,7 +266,7 @@ class MMs3DDataset(Dataset):
                 res[bkey].append(belement[bkey])
 
         for bkey in batch_keys:
-            if bkey == "original_mask" or bkey == "original_img" or bkey == "img_id":
+            if bkey == "original_mask" or bkey == "original_volume" or bkey == "volume_id":
                 continue  # We wont stack over original_mask...
             res[bkey] = torch.stack(res[bkey]) if None not in res[bkey] else None
 
@@ -278,19 +278,19 @@ class MMs3DDataset(Dataset):
         c_phase = df_entry["Phase"]
         c_vendor = df_entry["Vendor"]
         c_centre = df_entry["Centre"]
-        img_id = f"{external_code}_phase{c_phase}_vendor{c_vendor}_centre{c_centre}"
+        volume_id = f"{external_code}_phase{c_phase}_vendor{c_vendor}_centre{c_centre}"
 
         labeled_info = ""
         if self.partition == "Training":
             labeled_info = "Labeled" if df_entry["Labeled"] else "Unlabeled"
 
-        img_path = os.path.join(
+        volume_path = os.path.join(
             self.base_dir, self.partition, labeled_info, external_code,
             f"{external_code}_sa.nii.gz"
         )
-        image, affine, header = load_nii(img_path)
-        vol_mean, vol_std, vol_max, vol_min = image.mean(), image.std(), image.max(), image.min()
-        image = image[..., c_phase].transpose(2, 0, 1)
+        volume, affine, header = load_nii(volume_path)
+        vol_mean, vol_std, vol_max, vol_min = volume.mean(), volume.std(), volume.max(), volume.min()
+        volume = volume[..., c_phase].transpose(2, 0, 1)
 
         mask = None
         if not (self.partition == "Training" and not df_entry["Labeled"]):
@@ -301,34 +301,33 @@ class MMs3DDataset(Dataset):
             mask, mask_affine, mask_header = load_nii(mask_path)
             mask = mask[..., c_phase].transpose(2, 0, 1)
 
-        original_image = copy.deepcopy(image)
+        original_volume = copy.deepcopy(volume)
         original_mask = copy.deepcopy(mask)
 
-        image, mask = data_utils.apply_volume_2Daugmentations(image, self.transform, self.img_transform, mask)
+        volume, mask = data_utils.apply_volume_2Daugmentations(volume, self.transform, self.img_transform, mask)
 
         if self.normalization == "standardize_full_vol":
-            image = data_utils.apply_normalization(image, "standardize", mean=vol_mean, std=vol_std)
+            volume = data_utils.apply_normalization(volume, "standardize", mean=vol_mean, std=vol_std)
         elif self.normalization == "standardize_phase":
-            image = data_utils.apply_normalization(image, "standardize", mean=image.mean(), std=image.std())
+            volume = data_utils.apply_normalization(volume, "standardize", mean=volume.mean(), std=volume.std())
         elif self.normalization == "reescale_full_vol":
-            image = data_utils.apply_normalization(image, "reescale", image_max=vol_max, image_min=vol_min)
+            volume = data_utils.apply_normalization(volume, "reescale", image_max=vol_max, image_min=vol_min)
         elif self.normalization == "reescale_phase":
-            image = data_utils.apply_normalization(image, "reescale", image_max=image.max(), image_min=image.min())
+            volume = data_utils.apply_normalization(volume, "reescale", image_max=volume.max(), image_min=volume.min())
         else:
-            image = data_utils.apply_normalization(image, self.normalization)
+            volume = data_utils.apply_normalization(volume, self.normalization)
 
         # We have to stack volume as batch
-        image = np.expand_dims(image, axis=1)
-
-        image = torch.from_numpy(image)
+        volume = np.expand_dims(volume, axis=0) if not self.add_depth else volume
+        volume = torch.from_numpy(volume)
 
         if self.add_depth:
-            image = data_utils.add_volume_depth_channels(image)
-        mask = torch.from_numpy(np.expand_dims(mask, 1)).float() if mask is not None else None
+            volume = data_utils.add_volume_depth_channels(volume.unsqueeze(1))
+        mask = torch.from_numpy(np.expand_dims(mask, 0)).float() if mask is not None else None
 
         return {
-            "img_id": img_id, "image": image, "label": mask,
-            "original_img": original_image, "original_mask": original_mask
+            "volume_id": volume_id, "volume": volume, "label": mask,
+            "original_volume": original_volume, "original_mask": original_mask
         }
 
 

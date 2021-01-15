@@ -3,7 +3,7 @@
 from utils.general import current_time
 
 
-def build_header(class_to_cat, metric_list, display=True):
+def build_header(class_to_cat, criterion_list, metric_list, display=True):
     """
 
     Args:
@@ -18,6 +18,11 @@ def build_header(class_to_cat, metric_list, display=True):
     header = "| {:{align}{widthL}} | {:{align}{width}} | {:{align}{widthI}} | {:{align}{widthLr}} | ".format(
         "Time", "epoch", "Info", "LRate", align='^', widthL=19, width=7, widthI=6, widthLr=10, prec1=5
     )
+
+    for criterion_str in criterion_list:
+        header += "{:{align}{width}.{prec1}} | ".format(
+            criterion_str, align='^', width=9, prec1=9,
+        )
 
     for metric_str in metric_list:
         for key_class in class_to_cat:

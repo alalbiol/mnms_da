@@ -15,6 +15,8 @@ Training data for GE Vendor are unlabeled.
 
 ### Requirements
 
+!conda install -c conda-forge ffmpeg -y
+!conda install tsnecuda -c cannylab -y
 Pytoch >= 1.6 
 
 ```shell script
@@ -45,6 +47,11 @@ Normalization:
   - standardize
   - standardize_phase
   - standardize_full_vol
-  
+
+**Coral Loss**: The weight of the CORAL loss (λ) is set in such way that at the end of training the
+classification loss and CORAL loss are roughly the same. It seems be a reasonable
+choice as we want to have a feature representation that is both discriminative
+and also minimizes the distance between the source and target domains  
+
 ### ToDo
 

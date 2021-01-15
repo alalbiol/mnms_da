@@ -270,6 +270,7 @@ def train_step(train_loader, model, criterion, weights_criterion, multiclass_cri
     Returns:
 
     """
+    train_loss = 0
     model.train()
     for batch_indx, batch in enumerate(train_loader):
         image, label = batch["image"].cuda(), batch["label"].cuda()
@@ -282,22 +283,33 @@ def train_step(train_loader, model, criterion, weights_criterion, multiclass_cri
         loss.backward()
         optimizer.step()
 
+        train_loss += loss.item()
         train_metrics.record(prob_preds, label)
 
+    train_loss = train_loss / len(train_loader)
+    train_metrics.add_losses("Train_loss", train_loss)
     train_metrics.update()
     return train_metrics
 
 
-def val_step(val_loader, model, val_metrics, generated_overlays=1, overlays_path=""):
+def val_step(val_loader, model, val_metrics, criterion, weights_criterion, multiclass_criterion, num_classes,
+             generated_overlays=1, overlays_path=""):
     if generated_overlays != 1 and overlays_path != "":
         os.makedirs(overlays_path, exist_ok=True)
 
+    val_loss = 0
     model.eval()
     with torch.no_grad():
         for batch_indx, batch in enumerate(val_loader):
             img_id = batch["img_id"]
-            image = batch["image"].cuda()
+            image, label = batch["image"].cuda(), batch["label"].cuda()
             prob_preds = model(image)
+
+            loss = calculate_loss(
+                label, prob_preds, criterion, weights_criterion, multiclass_criterion, num_classes
+            )
+            val_loss += loss.item()
+
             original_masks = batch["original_mask"]
 
             if torch.is_tensor(batch["original_img"]):
@@ -307,6 +319,8 @@ def val_step(val_loader, model, val_metrics, generated_overlays=1, overlays_path
 
             val_metrics.record(prob_preds, original_masks, original_img, generated_overlays, overlays_path, img_id)
 
+    val_loss = val_loss / len(val_loader)
+    val_metrics.add_losses("Val_loss", val_loss)
     val_metrics.update()
     return val_metrics
 

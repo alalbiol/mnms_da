@@ -1,58 +1,30 @@
 #!/bin/bash
 
-# Only download meta data --> ./scripts/mms2d.sh only_meta
 # Only download data --> ./scripts/mms2d.sh only_data
-
-if [[ $1 == "only_meta" ]]
-then
-  wget -nv --load-cookies /tmp/cookies.txt \
-    "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt \
-    --keep-session-cookies --no-check-certificate \
-    'https://docs.google.com/uc?export=download&id=12XskEcHOo7Qg1YsDMm8jzpS7sZwpGT7R' \
-    -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=12XskEcHOo7Qg1YsDMm8jzpS7sZwpGT7R" \
-    -O MMs_Meta.tar.gz && rm -rf /tmp/cookies.txt
-  mkdir -p data
-  tar -zxf MMs_Meta.tar.gz  -C data/MMs
-  rm MMs_Meta.tar.gz
-
-  echo "Done!"
-  exit
-fi
 
 # Check if MMs data is available, if not download
 if [ ! -d "data/MMs" ]
 then
     echo "MMs data not found at 'data' directory. Downloading..."
 
-    wget -nv --load-cookies /tmp/cookies.txt \
-      "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt \
-      --keep-session-cookies --no-check-certificate \
-      'https://docs.google.com/uc?export=download&id=1g8vqf47A2KKnng1SIj5uxRaPsmrwqtki' \
-      -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1g8vqf47A2KKnng1SIj5uxRaPsmrwqtki" \
-      -O MMs_Oficial.tar.gz && rm -rf /tmp/cookies.txt
+    curl -O -J https://nextcloud.maparla.duckdns.org/s/psektTSfsaFa6Xr/download
     mkdir -p data
     tar -zxf MMs_Oficial.tar.gz  -C data/
     rm MMs_Oficial.tar.gz
 
-    wget -nv --load-cookies /tmp/cookies.txt \
-      "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt \
-      --keep-session-cookies --no-check-certificate \
-      'https://docs.google.com/uc?export=download&id=12XskEcHOo7Qg1YsDMm8jzpS7sZwpGT7R' \
-      -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=12XskEcHOo7Qg1YsDMm8jzpS7sZwpGT7R" \
-      -O MMs_Meta.tar.gz && rm -rf /tmp/cookies.txt
+    curl -O -J https://nextcloud.maparla.duckdns.org/s/BqYoWaYbTB9C83m/download
     mkdir -p data
     tar -zxf MMs_Meta.tar.gz  -C data/MMs
     rm MMs_Meta.tar.gz
 
+    [ "$1" == "only_data" ] && exit
+
     echo "Done!"
 else
-  echo "MMs data found at 'data' directory!"
+  echo "MMs data already downloaded!"
+  [ "$1" == "only_data" ] && exit
 fi
 
-if [[ $1 == "only_data" ]]
-then
-  exit
-fi
 
 gpu="0,1"
 dataset="mms2d"

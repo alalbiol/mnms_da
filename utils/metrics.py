@@ -50,6 +50,7 @@ class MetricsAccumulator:
         self.is_updated = True
         self.average = average
         self.mask_reshape_method = mask_reshape_method
+        self.losses = {}
 
     def __metrics_init(self):
         metric_methods = []
@@ -172,6 +173,12 @@ class MetricsAccumulator:
 
         self.is_updated = True
 
+    def add_losses(self, key, value):
+        if key in self.losses:
+            self.losses[key].extend([value])
+        else:
+            self.losses[key] = [value]
+
     def report_best(self):
         for key in self.metrics:
             print("\t- {}: {}".format(key, self.metrics_helpers[f"{key}_best_value"]))
@@ -191,9 +198,13 @@ class MetricsAccumulator:
 
     def __str__(self, precision=3):
         output_str = ""
+
+        for loss_key in self.losses:
+            output_str += '{:{align}{width}.{prec}f} | '.format(self.losses[loss_key][-1], align='^', width=9, prec=5)
+
         for metric_key in self.metric_list:
             output_str += ''.join(['{:{align}{width}.{prec}f} | '.format(
-                itemc, align='^', width=9, prec=3) for itemc in self.metrics[metric_key][-1]]
+                itemc, align='^', width=9, prec=4) for itemc in self.metrics[metric_key][-1]]
             )
         return output_str
 
