@@ -7,14 +7,19 @@ from torch.optim.swa_utils import AveragedModel
 from models import model_selector
 from utils.arguments import *
 from utils.data_augmentation import data_augmentation_selector
-from utils.datasets import dataset_selector
+from utils.datasets import dataset_selector, coral_dataset_selector
 from utils.logging import log_epoch, build_header
 from utils.neural import *
+
+if args.coral and args.coral_vendors is None:
+    assert False, "When coral selected specify which vendors use with '--coral_vendors'"
 
 train_aug, train_aug_img, val_aug = data_augmentation_selector(
     args.data_augmentation, args.img_size, args.crop_size, args.mask_reshape_method
 )
 train_loader, val_loader = dataset_selector(train_aug, train_aug_img, val_aug, args)
+train_coral_loader = coral_dataset_selector(train_aug, train_aug_img, "Training", args) if args.coral else None
+val_coral_loader = coral_dataset_selector(val_aug, [], "Validation", args) if args.coral else None
 num_classes = train_loader.dataset.num_classes
 
 model = model_selector(
@@ -52,13 +57,21 @@ for current_epoch in range(args.epochs):
     defrosted = check_defrost(model, defrosted, current_epoch, args.defrost_epoch)
 
     train_metrics = train_step(
-        train_loader, model, criterion, weights_criterion, multiclass_criterion, optimizer, train_metrics,
+        train_loader, model, criterion, weights_criterion, multiclass_criterion, optimizer, train_metrics
     )
+
+    train_metrics = train_coral_step(
+        train_coral_loader, model, args.coral_weight, optimizer, train_metrics, len(train_loader.dataset)
+    ) if args.coral else train_metrics
 
     val_metrics = val_step(
         val_loader, model, val_metrics, criterion, weights_criterion, multiclass_criterion, num_classes,
         generated_overlays=args.generated_overlays, overlays_path=f"{args.output_dir}/overlays/epoch_{current_epoch}"
     )
+
+    val_metrics = val_coral_step(
+        val_coral_loader, model, args.coral_weight, val_metrics, len(val_loader.dataset)
+    ) if args.coral else val_metrics
 
     current_lr = get_current_lr(optimizer)
     log_epoch((current_epoch + 1), current_lr, train_metrics, val_metrics, header)

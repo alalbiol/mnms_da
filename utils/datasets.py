@@ -258,6 +258,7 @@ class MMs3DDataset(Dataset):
         Returns:
 
         """
+        not_stack_items = ["original_mask", "original_volume", "volume_id", "vol_slices"]
         # We have to modify "original_mask" as has different shapes
         batch_keys = list(batch[0].keys())
         res = {bkey: [] for bkey in batch_keys}
@@ -266,7 +267,7 @@ class MMs3DDataset(Dataset):
                 res[bkey].append(belement[bkey])
 
         for bkey in batch_keys:
-            if bkey == "original_mask" or bkey == "original_volume" or bkey == "volume_id":
+            if bkey in not_stack_items:
                 continue  # We wont stack over original_mask...
             res[bkey] = torch.stack(res[bkey]) if None not in res[bkey] else None
 
@@ -290,6 +291,7 @@ class MMs3DDataset(Dataset):
         )
         volume, affine, header = load_nii(volume_path)
         vol_mean, vol_std, vol_max, vol_min = volume.mean(), volume.std(), volume.max(), volume.min()
+        vol_slices = volume.shape[2]
         volume = volume[..., c_phase].transpose(2, 0, 1)
 
         mask = None
@@ -326,9 +328,38 @@ class MMs3DDataset(Dataset):
         mask = torch.from_numpy(np.expand_dims(mask, 0)).float() if mask is not None else None
 
         return {
-            "volume_id": volume_id, "volume": volume, "label": mask,
-            "original_volume": original_volume, "original_mask": original_mask
+            "volume_id": volume_id, "volume": volume, "label": mask, "vol_slices": vol_slices,
+            "original_volume": original_volume, "original_mask": original_mask,
         }
+
+
+def get_volume_loader(vendor, train_aug, train_aug_img, add_depth=True, partition="Training"):
+    """
+    Helper function for easily create data loaders for coral loss application
+    """
+    normalization = "standardize"
+    data_mod = ""
+
+    batch_size = 1
+
+    dataset = f"mms_vendor{vendor}{data_mod}"
+
+    only_end = False if "full" in dataset else True
+    unlabeled = True if "unlabeled" in dataset or partition in ["Validation", "Testing"] else False
+    c_centre = find_values(dataset, "centre", int)
+    c_vendor = find_values(dataset, "vendor", str)
+
+    dataset = MMs3DDataset(
+        partition=partition, transform=train_aug, img_transform=train_aug_img, normalization=normalization,
+        add_depth=add_depth, is_labeled=(not unlabeled), centre=c_centre, vendor=c_vendor, end_volumes=only_end
+    )
+
+    loader = DataLoader(
+        dataset, batch_size=batch_size, pin_memory=True, collate_fn=dataset.custom_collate,
+        shuffle=True if partition == "Training" else False,
+    )
+
+    return loader
 
 
 class MMsSubmissionDataset(Dataset):
@@ -541,3 +572,13 @@ def dataset_selector(train_aug, train_aug_img, val_aug, args, is_test=False):
     print(f"Train dataset len:  {len(train_dataset)}")
     print(f"Validation dataset len:  {len(val_dataset)}")
     return train_loader, val_loader
+
+
+def coral_dataset_selector(train_aug, train_aug_img, partition, args):
+    vendor_loaders = []
+    for coral_vendor in args.coral_vendors:
+        vendor_loader = get_volume_loader(
+            coral_vendor, train_aug, train_aug_img, add_depth=args.add_depth, partition=partition
+        )
+        vendor_loaders.append(vendor_loader)
+    return vendor_loaders

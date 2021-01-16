@@ -1,7 +1,6 @@
-import numpy as np
 from torch.optim.swa_utils import SWALR
 
-from tools.metrics_mnms import save_nii
+from utils.coral import coral_loss
 from utils.general import *
 from utils.losses import *
 from utils.metrics import MetricsAccumulator
@@ -247,7 +246,8 @@ def calculate_loss(y_true, y_pred, criterion, weights_criterion, multiclass_crit
 
             tmp_loss, tmp_mask = 0, 1 - (y_true != current_class) * 1.0
             for indx in singleclass_indices:  # Accumulate all different losses for each single class
-                tmp_loss += weights_criterion[indx] * criterion[indx](y_pred[:, int(current_class), :, :], tmp_mask.squeeze(1))
+                tmp_loss += weights_criterion[indx] * criterion[indx](y_pred[:, int(current_class), :, :],
+                                                                      tmp_mask.squeeze(1))
 
             # Average over the number of classes
             loss += (tmp_loss / len(y_true.unique()))
@@ -285,6 +285,7 @@ def train_step(train_loader, model, criterion, weights_criterion, multiclass_cri
 
         train_loss += loss.item()
         train_metrics.record(prob_preds, label)
+        break
 
     train_loss = train_loss / len(train_loader)
     train_metrics.add_losses("Train_loss", train_loss)
@@ -318,11 +319,98 @@ def val_step(val_loader, model, val_metrics, criterion, weights_criterion, multi
                 original_img = batch["original_img"]
 
             val_metrics.record(prob_preds, original_masks, original_img, generated_overlays, overlays_path, img_id)
+            break
 
     val_loss = val_loss / len(val_loader)
     val_metrics.add_losses("Val_loss", val_loss)
     val_metrics.update()
     return val_metrics
+
+
+def train_coral_step(coral_loader, model, coral_weight, optimizer, train_metrics, num_iters):
+    """
+
+    Args:
+        coral_loader: list of volume dataloaders for each vendor
+        model:
+        coral_weight:
+        optimizer:
+        train_metrics:
+        num_iters: number of examples to sample as train step. Ex: 10 will perform 10 coral loss steps
+    Returns:
+
+    """
+    if len(coral_loader) < 2:
+        assert False, "Please set al least 2 dataloader for coral loss contrastive learning"
+
+    total_loss = 0
+    model.train()
+
+    for batch_indx in range(num_iters):
+        paired_loaders = np.random.choice(coral_loader, 2, replace=False)  # replace=False to non-repetitive choice
+
+        optimizer.zero_grad()
+
+        batch_0 = next(iter(paired_loaders[0]))  # torch.Size([1, slices, 3, 224, 224])
+        pred_0 = model(batch_0["volume"].squeeze())  # squeeze -> use num slices as batch
+        pred_0_flat = pred_0.permute(0, 2, 3, 1).contiguous().view(-1, 4)
+
+        batch_1 = next(iter(paired_loaders[1]))  # torch.Size([1, slices, 3, 224, 224])
+        pred_1 = model(batch_1["volume"].squeeze())  # squeeze -> use num slices as batch
+        pred_1_flat = pred_1.permute(0, 2, 3, 1).contiguous().view(-1, 4)
+
+        loss = coral_loss(pred_0_flat, pred_1_flat) * coral_weight
+        loss.backward()
+        optimizer.step()
+
+        total_loss += loss.item()
+        break
+
+    total_loss = total_loss / num_iters
+    train_metrics.add_losses("Coral_loss", total_loss)
+    return train_metrics
+
+
+def val_coral_step(coral_loader, model, coral_weight, val_metrics, num_iters):
+    """
+
+    Args:
+        coral_loader: list of volume dataloaders for each vendor
+        model:
+        coral_weight:
+        optimizer:
+        val_metrics:
+        num_iters: number of examples to sample as train step. Ex: 10 will perform 10 coral loss steps
+    Returns:
+
+    """
+    if len(coral_loader) < 2:
+        assert False, "Please set al least 2 dataloader for coral loss contrastive learning"
+
+    total_loss = 0
+    model.eval()
+
+    with torch.no_grad():
+        for batch_indx in range(num_iters):
+            paired_loaders = np.random.choice(coral_loader, 2, replace=False)  # replace=False to non-repetitive choice
+
+            batch_0 = next(iter(paired_loaders[0]))  # torch.Size([1, slices, 3, 224, 224])
+            pred_0 = model(batch_0["volume"].squeeze())  # squeeze -> use num slices as batch
+            pred_0_flat = pred_0.permute(0, 2, 3, 1).contiguous().view(-1, 4)
+
+            batch_1 = next(iter(paired_loaders[1]))  # torch.Size([1, slices, 3, 224, 224])
+            pred_1 = model(batch_1["volume"].squeeze())  # squeeze -> use num slices as batch
+            pred_1_flat = pred_1.permute(0, 2, 3, 1).contiguous().view(-1, 4)
+
+            loss = coral_loss(pred_0_flat, pred_1_flat) * coral_weight
+
+            total_loss += loss.item()
+            break
+
+    total_loss = total_loss / num_iters
+    val_metrics.add_losses("Coral_loss", total_loss)
+    return val_metrics
+
 
 
 def finish_swa(swa_model, train_loader, val_loader, args):
