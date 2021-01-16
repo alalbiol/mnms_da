@@ -285,7 +285,6 @@ def train_step(train_loader, model, criterion, weights_criterion, multiclass_cri
 
         train_loss += loss.item()
         train_metrics.record(prob_preds, label)
-        break
 
     train_loss = train_loss / len(train_loader)
     train_metrics.add_losses("Train_loss", train_loss)
@@ -319,7 +318,6 @@ def val_step(val_loader, model, val_metrics, criterion, weights_criterion, multi
                 original_img = batch["original_img"]
 
             val_metrics.record(prob_preds, original_masks, original_img, generated_overlays, overlays_path, img_id)
-            break
 
     val_loss = val_loss / len(val_loader)
     val_metrics.add_losses("Val_loss", val_loss)
@@ -364,7 +362,6 @@ def train_coral_step(coral_loader, model, coral_weight, optimizer, train_metrics
         optimizer.step()
 
         total_loss += loss.item()
-        break
 
     total_loss = total_loss / num_iters
     train_metrics.add_losses("Coral_loss", total_loss)
@@ -405,7 +402,6 @@ def val_coral_step(coral_loader, model, coral_weight, val_metrics, num_iters):
             loss = coral_loss(pred_0_flat, pred_1_flat) * coral_weight
 
             total_loss += loss.item()
-            break
 
     total_loss = total_loss / num_iters
     val_metrics.add_losses("Coral_loss", total_loss)

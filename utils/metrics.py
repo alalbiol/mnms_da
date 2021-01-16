@@ -3,6 +3,7 @@ from utils.general import dict2df, convert_multiclass_mask, reshape_masks, plot_
 import numpy as np
 import torch
 import monai
+import pickle
 
 AVAILABLE_METRICS = ("accuracy", "iou", "dice", "assd", "hausdorff")
 
@@ -189,12 +190,7 @@ class MetricsAccumulator:
         return np.mean(self.metrics[metric_name][-1])
 
     def save_progress(self, output_dir, identifier=""):
-        nested_metrics = {
-            metric_name:
-                [item for sublist in self.metrics[metric_name] for item in sublist]
-            for metric_name in self.metrics
-        }
-        dict2df(nested_metrics, os.path.join(output_dir, f'{identifier}_progress.csv'))
+        pickle.dump(self.__dict__, open(os.path.join(output_dir, f'{identifier}_progress.pkl'), "wb"))
 
     def __str__(self, precision=3):
         output_str = ""
