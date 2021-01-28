@@ -20,7 +20,7 @@ class MMs2DDataset(Dataset):
 
     def __init__(self, partition, transform, img_transform, normalization="normalize", add_depth=True,
                  is_labeled=True, centre=None, vendor=None, end_volumes=True, data_relative_path="",
-                 only_phase="", rand_histogram_matching=False):
+                 only_phase="", rand_histogram_matching=False, patients_percentage=1):
         """
         :param partition: (string) Dataset partition in ["Training", "Validation", "Test"]
         :param transform: (list) List of albumentations applied to image and mask
@@ -34,9 +34,10 @@ class MMs2DDataset(Dataset):
         :param data_relative_path: (string) Prepend extension to MMs data base dir
         :param only_phase: (string) Select only phases by 'ED' or 'ES'
         :param rand_histogram_matching: (bool) Perform random histogram matching with different vendors
+        :param patients_percentage: (float) Train patients percentage (from 0 to 1)
         """
 
-        if partition not in ["Training", "Validation", "Testing"]:
+        if partition not in ["Training", "Validation", "Testing", "All", "All_val"]:
             assert False, "Unknown mode '{}'".format(partition)
 
         self.base_dir = os.path.join(data_relative_path, "data/MMs")
@@ -47,7 +48,9 @@ class MMs2DDataset(Dataset):
         self.num_classes = 4  # background - LV - MYO - RV
 
         data = pd.read_csv(os.path.join(self.base_dir, "slices_info.csv"))
-        data = data.loc[(data["Partition"] == partition) & (data["Labeled"] == is_labeled)]
+        if "All" not in self.partition:
+            data = data.loc[(data["Partition"] == partition)]
+            data = data.loc[(data["Labeled"] == is_labeled)]
         if vendor is not None:
             data = data.loc[data['Vendor'].isin(vendor)]
         if centre is not None:
@@ -62,6 +65,14 @@ class MMs2DDataset(Dataset):
             data = data.loc[(data[only_phase] == data["Phase"])]
 
         data = data.reset_index(drop=True)
+
+        if patients_percentage != 1:
+            patient_list = np.sort(data["External code"].unique())
+            np.random.seed(1)
+            train_indx = np.random.choice(range(len(patient_list)), size=(int(patients_percentage*len(patient_list)),), replace=False)
+            train_patients = patient_list[train_indx]
+            data = data.loc[data["External code"].isin(train_patients)]
+
         self.data = data
         self.data_meta = pd.read_csv(os.path.join(self.base_dir, "volume_info_statistics.csv"))
 
@@ -73,7 +84,7 @@ class MMs2DDataset(Dataset):
         self.rand_histogram_matching = rand_histogram_matching
         if self.rand_histogram_matching:
             data = pd.read_csv(os.path.join(self.base_dir, "slices_info.csv"))
-            self.hist_match_df = data.loc[data["Partition"] == partition]
+            self.hist_match_df = data.loc[data["Partition"] == partition] if "All" not in self.partition else data
 
     def __len__(self):
         return len(self.data)
@@ -105,15 +116,16 @@ class MMs2DDataset(Dataset):
 
     def histogram_matching_augmentation(self, image, original_vendor):
         # 40% of the time perform histogram matching with different vendor slice
-        if self.partition == "Training" and self.rand_histogram_matching and (random.random() < 0.4):
+        if self.partition in ["Training", "All"] and self.rand_histogram_matching and (random.random() < 0.4):
             rand_hist_entry = self.hist_match_df[self.hist_match_df["Vendor"] != original_vendor].sample(n=1).iloc[0]
             external_code = rand_hist_entry["External code"]
             c_slice = rand_hist_entry["Slice"]
             c_phase = rand_hist_entry["Phase"]
             c_vendor = rand_hist_entry["Vendor"]
+            c_partition = rand_hist_entry["Partition"]
             labeled_info = "Unlabeled" if c_vendor == "C" else "Labeled"
             reference_img_path = os.path.join(
-                self.base_dir, self.partition, labeled_info, external_code,
+                self.base_dir, c_partition, labeled_info, external_code,
                 f"{external_code}_sa_slice{c_slice}_phase{c_phase}.npy"
             )
             reference = np.load(reference_img_path)
@@ -125,6 +137,7 @@ class MMs2DDataset(Dataset):
         external_code = df_entry["External code"]
         c_slice = df_entry["Slice"]
         c_phase = df_entry["Phase"]
+        c_partition = df_entry["Partition"]
         if c_phase == df_entry["ED"]:
             c_phase_str = "ED"
         elif c_phase == df_entry["ES"]:
@@ -137,11 +150,11 @@ class MMs2DDataset(Dataset):
         img_id = f"{external_code}_slice{c_slice}_phase{c_phase}_vendor{c_vendor}_centre{c_centre}"
 
         labeled_info = ""
-        if self.partition == "Training":
+        if c_partition == "Training":
             labeled_info = "Labeled" if df_entry["Labeled"] else "Unlabeled"
 
         img_path = os.path.join(
-            self.base_dir, self.partition, labeled_info, external_code,
+            self.base_dir, c_partition, labeled_info, external_code,
             f"{external_code}_sa_slice{c_slice}_phase{c_phase}.npy"
         )
         image = np.load(img_path)
@@ -150,9 +163,9 @@ class MMs2DDataset(Dataset):
         image = self.histogram_matching_augmentation(image, c_vendor)
 
         mask = None
-        if not (self.partition == "Training" and not df_entry["Labeled"]):
+        if self.partition == "All" or not (c_partition == "Training" and not df_entry["Labeled"]):
             mask_path = os.path.join(
-                self.base_dir, self.partition, labeled_info, external_code,
+                self.base_dir, c_partition, labeled_info, external_code,
                 f"{external_code}_sa_gt_slice{c_slice}_phase{c_phase}.npy"
             )
             mask = np.load(mask_path)
@@ -333,7 +346,7 @@ class MMs3DDataset(Dataset):
         }
 
 
-def get_volume_loader(vendor, train_aug, train_aug_img, add_depth=True, partition="Training"):
+def get_volume_loader(vendor, train_aug, train_aug_img, add_depth=True, partition="Training", data_relative_path=""):
     """
     Helper function for easily create data loaders for coral loss application
     """
@@ -351,7 +364,8 @@ def get_volume_loader(vendor, train_aug, train_aug_img, add_depth=True, partitio
 
     dataset = MMs3DDataset(
         partition=partition, transform=train_aug, img_transform=train_aug_img, normalization=normalization,
-        add_depth=add_depth, is_labeled=(not unlabeled), centre=c_centre, vendor=c_vendor, end_volumes=only_end
+        add_depth=add_depth, is_labeled=(not unlabeled), centre=c_centre, vendor=c_vendor, end_volumes=only_end,
+        data_relative_path=data_relative_path
     )
 
     loader = DataLoader(
@@ -546,16 +560,30 @@ def dataset_selector(train_aug, train_aug_img, val_aug, args, is_test=False):
         unlabeled = True if "unlabeled" in args.dataset else False
         c_centre, c_vendor = find_values(args.dataset, "centre", int), find_values(args.dataset, "vendor", str)
 
-        train_dataset = MMs2DDataset(
-            partition="Training", transform=train_aug, img_transform=train_aug_img, normalization=args.normalization,
-            add_depth=args.add_depth, is_labeled=(not unlabeled), centre=c_centre, vendor=c_vendor,
-            end_volumes=only_end, rand_histogram_matching=args.rand_histogram_matching
-        )
+        if "all" in args.dataset:
+            train_dataset = MMs2DDataset(
+                partition="All", transform=train_aug, img_transform=train_aug_img,
+                normalization=args.normalization,
+                add_depth=args.add_depth, is_labeled=(not unlabeled), centre=c_centre, vendor=c_vendor,
+                end_volumes=only_end, rand_histogram_matching=args.rand_histogram_matching
+            )
 
-        val_dataset = MMs2DDataset(
-            partition="Validation", transform=val_aug, img_transform=[], normalization=args.normalization,
-            add_depth=args.add_depth, is_labeled=False, centre=None, vendor=None, end_volumes=True
-        )
+            val_dataset = MMs2DDataset(
+                partition="All_val", transform=val_aug, img_transform=[], normalization=args.normalization,
+                add_depth=args.add_depth, is_labeled=False, centre=None, vendor=None, end_volumes=True
+            )
+        else:
+            train_dataset = MMs2DDataset(
+                partition="Training", transform=train_aug, img_transform=train_aug_img, normalization=args.normalization,
+                add_depth=args.add_depth, is_labeled=(not unlabeled), centre=c_centre, vendor=c_vendor,
+                end_volumes=only_end, rand_histogram_matching=args.rand_histogram_matching
+                , patients_percentage=args.patients_percentage
+            )
+
+            val_dataset = MMs2DDataset(
+                partition="Validation", transform=val_aug, img_transform=[], normalization=args.normalization,
+                add_depth=args.add_depth, is_labeled=False, centre=None, vendor=None, end_volumes=True
+            )
 
         train_loader = DataLoader(
             train_dataset, batch_size=args.batch_size, pin_memory=True,

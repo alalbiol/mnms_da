@@ -349,12 +349,17 @@ def train_coral_step(coral_loader, model, coral_weight, optimizer, train_metrics
 
         optimizer.zero_grad()
 
-        batch_0 = next(iter(paired_loaders[0]))  # torch.Size([1, slices, 3, 224, 224])
-        pred_0 = model(batch_0["volume"].squeeze())  # squeeze -> use num slices as batch
+        # torch.Size([1, slices, 3, 224, 224]); squeeze -> num slices as batch
+        batch_0 = next(iter(paired_loaders[0]))["volume"].squeeze()
+        batch_1 = next(iter(paired_loaders[1]))["volume"].squeeze()
+
+        batch = torch.cat((batch_0, batch_1), 0)
+        pred = model(batch)
+
+        pred_0 = pred[:len(batch_0)]
         pred_0_flat = pred_0.permute(0, 2, 3, 1).contiguous().view(-1, 4)
 
-        batch_1 = next(iter(paired_loaders[1]))  # torch.Size([1, slices, 3, 224, 224])
-        pred_1 = model(batch_1["volume"].squeeze())  # squeeze -> use num slices as batch
+        pred_1 = pred[len(batch_0):]
         pred_1_flat = pred_1.permute(0, 2, 3, 1).contiguous().view(-1, 4)
 
         loss = coral_loss(pred_0_flat, pred_1_flat) * coral_weight

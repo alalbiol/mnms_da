@@ -11,6 +11,7 @@ from utils.datasets import dataset_selector, coral_dataset_selector
 from utils.logging import log_epoch, build_header
 from utils.neural import *
 
+
 if args.coral and args.coral_vendors is None:
     assert False, "When coral selected specify which vendors use with '--coral_vendors'"
 
@@ -69,9 +70,10 @@ for current_epoch in range(args.epochs):
         generated_overlays=args.generated_overlays, overlays_path=f"{args.output_dir}/overlays/epoch_{current_epoch}"
     )
 
-    val_metrics = val_coral_step(
-        val_coral_loader, model, args.coral_weight, val_metrics, len(val_loader.dataset)
-    ) if args.coral else val_metrics
+    # val_metrics = val_coral_step(
+    #     val_coral_loader, model, args.coral_weight, val_metrics, len(val_loader.dataset)
+    # ) if args.coral else val_metrics
+    if args.coral: val_metrics.add_losses("Coral_loss", 0.0000)
 
     current_lr = get_current_lr(optimizer)
     log_epoch((current_epoch + 1), current_lr, train_metrics, val_metrics, header)

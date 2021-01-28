@@ -38,6 +38,7 @@ python3 tools/testgt2phases.py
   - `_unlabeled` Get only unlabeled volumes (for 'ED' and 'ES' phases)
   - `_centre*xyz*` Get volumes (for 'ED' and 'ES' phases) for selected centres. Example `_centre1`, `_centre13`. Last one picks centres 1 and 3. Available Centres from 1 to 5.
   - `_vendor*jkl*` Get volumes (for 'ED' and 'ES' phases) for selected vendors. Example `_centreC`, `_vendorAB`. Last one picks vendors A and B. Available Vendors 'A', 'B', 'C', 'D'.
+  - `_all` Get all segmented (which is ED and ES phases) slices (Training Labeled + Training Unlabeled + Validation + Test)
 
 Normalization:
   - none

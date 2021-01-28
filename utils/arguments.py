@@ -74,6 +74,8 @@ parser.add_argument(
 
 parser.add_argument('--selected_class', type=str, default="", help='If there is a model checkpoint to load')
 
+parser.add_argument('--patients_percentage', type=float, default=1, help='Train patients percentage (from 0 to 1)')
+
 args = parser.parse_args()
 
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
