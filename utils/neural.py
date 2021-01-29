@@ -413,8 +413,9 @@ def val_coral_step(coral_loader, model, coral_weight, val_metrics, num_iters):
     return val_metrics
 
 
-
-def finish_swa(swa_model, train_loader, val_loader, args):
+def finish_swa(
+        swa_model, train_loader, val_loader, criterion, weights_criterion, multiclass_criterion, num_classes, args
+):
     if args.swa_start == -1:  # If swa was not used, do not perform nothing
         return
 
@@ -445,8 +446,8 @@ def finish_swa(swa_model, train_loader, val_loader, args):
     )
 
     swa_metrics = val_step(
-        val_loader, swa_model, swa_metrics, generated_overlays=args.generated_overlays,
-        overlays_path=f"{args.output_dir}/overlays_swa"
+        val_loader, swa_model, swa_metrics, criterion, weights_criterion, multiclass_criterion, num_classes,
+        generated_overlays=args.generated_overlays, overlays_path=f"{args.output_dir}/overlays_swa"
     )
 
     print("SWA validation metrics")

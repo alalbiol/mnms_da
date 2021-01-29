@@ -3,14 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="e74aa284-0ca1-4a3d-b39d-f37e6389a162" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/Atr.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/Atr.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/Btr.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/Btr.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/mms2d_covariances.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/mms2d_covariances.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/eval_mms2d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/eval_mms2d.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d_coral.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d_coral.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/metrics_mnms.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/metrics_mnms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/arguments.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/arguments.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/datasets.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/neural.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/neural.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -98,6 +95,7 @@
       <workItem from="1611591999562" duration="4443000" />
       <workItem from="1611604351204" duration="4658000" />
       <workItem from="1611831295415" duration="1648000" />
+      <workItem from="1611917077342" duration="1440000" />
     </task>
     <task id="LOCAL-00001" summary="fix">
       <created>1607432585436</created>
@@ -188,17 +186,17 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/train.py</url>
-          <line>61</line>
+          <line>58</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/train.py</url>
-          <line>65</line>
+          <line>62</line>
           <option name="timeStamp" value="5" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/train.py</url>
-          <line>69</line>
+          <line>66</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">

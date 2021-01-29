@@ -386,7 +386,6 @@ def compute_metrics_on_directories(dir_gt, dir_pred, remove_preds):
     print(f"lst_pred: {len(lst_pred)}")
     print(f"lst_gt: {len(lst_gt)}")
     for indx, (p_gt, p_pred) in enumerate(zip(lst_gt, lst_pred)):
-        print(indx)
         # print('> Evaluate image:', p_pred)
         # print('  Against gt:', p_gt)
 

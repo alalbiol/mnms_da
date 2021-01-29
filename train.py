@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from torch.optim.swa_utils import AveragedModel
-
 # ---- My utils ----
 from models import model_selector
 from utils.arguments import *
@@ -27,7 +25,6 @@ model = model_selector(
     args.problem_type, args.model_name, num_classes,
     in_channels=train_loader.dataset.img_channels, devices=args.gpu, checkpoint=args.model_checkpoint
 )
-
 swa_model = None
 
 criterion, weights_criterion, multiclass_criterion = get_criterion(args.criterion, args.weights_criterion)
@@ -82,11 +79,12 @@ for current_epoch in range(args.epochs):
     train_metrics.save_progress(args.output_dir, identifier="train_metrics")
 
     if args.swa_start != -1 and (current_epoch + 1) >= args.swa_start:
-        if swa_model is None:
+        if not swa_model:
             print("\n------------------------------- START SWA -------------------------------\n")
-            swa_model = AveragedModel(model)
-        swa_model.update_parameters(model)
-        swa_scheduler.step()
+            swa_model = torch.optim.swa_utils.AveragedModel(model)
+        else:
+            swa_model.update_parameters(model)
+            swa_scheduler.step()
     else:
         # Only save checkpoints when not applying SWA -> only want save last model using SWA
         create_checkpoint(val_metrics, model, args.model_name, args.output_dir)
@@ -95,4 +93,4 @@ for current_epoch in range(args.epochs):
 print("\nBest Validation Results:")
 val_metrics.report_best()
 
-finish_swa(swa_model, train_loader, val_loader, args)
+finish_swa(swa_model, train_loader, val_loader, criterion, weights_criterion, multiclass_criterion, num_classes, args)
