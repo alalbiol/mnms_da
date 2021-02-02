@@ -64,14 +64,14 @@ class MMs2DDataset(Dataset):
                 assert False, f"Only ED and ES phases available (selected '{only_phase}')"
             data = data.loc[(data[only_phase] == data["Phase"])]
 
-        data = data.reset_index(drop=True)
-
         if patients_percentage != 1:
             patient_list = np.sort(data["External code"].unique())
             np.random.seed(1)
             train_indx = np.random.choice(range(len(patient_list)), size=(int(patients_percentage*len(patient_list)),), replace=False)
             train_patients = patient_list[train_indx]
             data = data.loc[data["External code"].isin(train_patients)]
+
+        data = data.reset_index(drop=True)
 
         self.data = data
         self.data_meta = pd.read_csv(os.path.join(self.base_dir, "volume_info_statistics.csv"))
