@@ -58,21 +58,16 @@ for current_epoch in range(args.epochs):
     defrosted = check_defrost(model, defrosted, current_epoch, args.defrost_epoch)
 
     train_metrics = train_step(
-        train_loader, model, criterion, weights_criterion, multiclass_criterion, optimizer, train_metrics
+        train_loader, model, criterion, weights_criterion, multiclass_criterion, optimizer, train_metrics,
+        args.coral, train_coral_loader, args.coral_weight, args.vol_task_weight
     )
-
-    train_metrics = train_coral_step(
-        train_coral_loader, model, args.coral_weight, optimizer, train_metrics, len(train_loader.dataset)
-    ) if args.coral else train_metrics
 
     val_metrics = val_step(
         val_loader, model, val_metrics, criterion, weights_criterion, multiclass_criterion, num_classes,
         generated_overlays=args.generated_overlays, overlays_path=f"{args.output_dir}/overlays/epoch_{current_epoch}"
     )
 
-    # val_metrics = val_coral_step(
-    #     val_coral_loader, model, args.coral_weight, val_metrics, len(val_loader.dataset)
-    # ) if args.coral else val_metrics
+    # ToDo
     if args.coral: val_metrics.add_losses("Coral_loss", 0.0000)
 
     current_lr = get_current_lr(optimizer)

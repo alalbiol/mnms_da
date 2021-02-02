@@ -255,7 +255,10 @@ def calculate_loss(y_true, y_pred, criterion, weights_criterion, multiclass_crit
     return loss
 
 
-def train_step(train_loader, model, criterion, weights_criterion, multiclass_criterion, optimizer, train_metrics):
+def train_step(
+    train_loader, model, criterion, weights_criterion, multiclass_criterion, optimizer, train_metrics,
+    coral, coral_loader, coral_weight, vol_task_weight
+):
     """
 
     Args:
@@ -270,24 +273,68 @@ def train_step(train_loader, model, criterion, weights_criterion, multiclass_cri
     Returns:
 
     """
-    train_loss = 0
+    task_loss, coral_global = 0, 0
     model.train()
     for batch_indx, batch in enumerate(train_loader):
         image, label = batch["image"].cuda(), batch["label"].cuda()
         optimizer.zero_grad()
         prob_preds = model(image)
+
         loss = calculate_loss(
             label, prob_preds, criterion, weights_criterion, multiclass_criterion,
             train_loader.dataset.num_classes
         )
-        loss.backward()
-        optimizer.step()
 
-        train_loss += loss.item()
+        task_loss += loss.item()
+        loss.backward()
+
+        if coral:
+            paired_loaders = np.random.choice(coral_loader, 2, replace=False)  # replace=False to non-repetitive choice
+
+            # torch.Size([1, slices, 3, 224, 224]); squeeze -> num slices as batch
+            batch_0 = next(iter(paired_loaders[0]))
+            batch_0_vol = batch_0["volume"].squeeze()
+            batch_1 = next(iter(paired_loaders[1]))
+            batch_1_vol = batch_1["volume"].squeeze()
+
+            batch = torch.cat((batch_0_vol, batch_1_vol), 0)
+            pred = model(batch)
+
+            pred_0 = pred[:len(batch_0_vol)]
+            pred_0_flat = pred_0.permute(0, 2, 3, 1).contiguous().view(-1, 4)
+
+            pred_1 = pred[len(batch_0_vol):]
+            pred_1_flat = pred_1.permute(0, 2, 3, 1).contiguous().view(-1, 4)
+
+            c_loss = coral_loss(pred_0_flat, pred_1_flat) * coral_weight
+            coral_global += c_loss.item()
+
+            if batch_0["labeled_info"][0] == "Labeled":
+                batch_0_label = batch_0["label"].squeeze().unsqueeze(1)  # [1, 1, s, h, w] -> [s, 1, h, w]
+                task_vol0_loss = calculate_loss(
+                    batch_0_label.cuda(), pred_0.cuda(), criterion, weights_criterion, multiclass_criterion,
+                    train_loader.dataset.num_classes
+                )
+
+                c_loss = c_loss + (task_vol0_loss * vol_task_weight)
+
+            if batch_1["labeled_info"][0] == "Labeled":
+                batch_1_label = batch_1["label"].squeeze().unsqueeze(1)  # [1, 1, s, h, w] -> [s, 1, h, w]
+                task_vol1_loss = calculate_loss(
+                    batch_1_label.cuda(), pred_1.cuda(), criterion, weights_criterion, multiclass_criterion,
+                    train_loader.dataset.num_classes
+                )
+
+                c_loss = c_loss + (task_vol1_loss * vol_task_weight)
+
+            c_loss.backward()
+
+        optimizer.step()
         train_metrics.record(prob_preds, label)
 
-    train_loss = train_loss / len(train_loader)
-    train_metrics.add_losses("Train_loss", train_loss)
+    task_loss = task_loss / len(train_loader)
+    train_metrics.add_losses("Train_loss", task_loss)
+    train_metrics.add_losses("Coral_loss", coral_loss)
     train_metrics.update()
     return train_metrics
 

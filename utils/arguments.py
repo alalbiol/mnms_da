@@ -59,6 +59,7 @@ parser.add_argument('--weights_criterion', type=str, default='default', help='We
 parser.add_argument('--coral', action='store_true', help='Whether apply coral loss or not')
 parser.add_argument('--coral_vendors', '--argc', nargs='+', type=str, help='Which vendors are used for coral loss')
 parser.add_argument('--coral_weight', type=float, default=0.01, help='Coral loss weight')
+parser.add_argument('--vol_task_weight', type=float, default=0.7, help='Volume task loss (used when coral)')
 
 parser.add_argument('--model_checkpoint', type=str, default="", help='If there is a model checkpoint to load')
 parser.add_argument('--swa_checkpoint', action='store_true', help='If we load the model checkpoint from SWA model')

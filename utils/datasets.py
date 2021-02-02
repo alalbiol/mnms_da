@@ -271,7 +271,7 @@ class MMs3DDataset(Dataset):
         Returns:
 
         """
-        not_stack_items = ["original_mask", "original_volume", "volume_id", "vol_slices"]
+        not_stack_items = ["original_mask", "original_volume", "volume_id", "vol_slices", "labeled_info"]
         # We have to modify "original_mask" as has different shapes
         batch_keys = list(batch[0].keys())
         res = {bkey: [] for bkey in batch_keys}
@@ -342,7 +342,7 @@ class MMs3DDataset(Dataset):
 
         return {
             "volume_id": volume_id, "volume": volume, "label": mask, "vol_slices": vol_slices,
-            "original_volume": original_volume, "original_mask": original_mask,
+            "original_volume": original_volume, "original_mask": original_mask, "labeled_info": labeled_info
         }
 
 
