@@ -3,12 +3,15 @@
   <component name="ChangeListManager">
     <list default="true" id="e74aa284-0ca1-4a3d-b39d-f37e6389a162" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/mms2d_covariances.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/mms2d_covariances.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/predict.py" beforeDir="false" afterPath="$PROJECT_DIR$/predict.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d_coral.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d_coral.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/arguments.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/arguments.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/dataload.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/dataload.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/datasets.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/general.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/general.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/neural.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/neural.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -97,6 +100,8 @@
       <workItem from="1611604351204" duration="4658000" />
       <workItem from="1611831295415" duration="2687000" />
       <workItem from="1611937112374" duration="2875000" />
+      <workItem from="1612252563768" duration="114000" />
+      <workItem from="1612365797894" duration="7057000" />
     </task>
     <task id="LOCAL-00001" summary="fix">
       <created>1607432585436</created>
@@ -161,7 +166,14 @@
       <option name="project" value="LOCAL" />
       <updated>1611834101990</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="integrating coral">
+      <created>1612252637072</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1612252637072</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -188,70 +200,71 @@
     <MESSAGE value="coral integration" />
     <MESSAGE value="tagged" />
     <MESSAGE value="more data partition options, coral improvements" />
-    <option name="LAST_COMMIT_MESSAGE" value="more data partition options, coral improvements" />
+    <MESSAGE value="integrating coral" />
+    <option name="LAST_COMMIT_MESSAGE" value="integrating coral" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/neural.py</url>
-          <line>291</line>
+          <line>290</line>
           <option name="timeStamp" value="25" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/neural.py</url>
-          <line>299</line>
+          <line>298</line>
           <option name="timeStamp" value="26" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/neural.py</url>
-          <line>308</line>
+          <line>307</line>
           <option name="timeStamp" value="28" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/neural.py</url>
-          <line>309</line>
+          <line>308</line>
           <option name="timeStamp" value="29" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/neural.py</url>
-          <line>288</line>
+          <line>287</line>
           <option name="timeStamp" value="30" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/neural.py</url>
-          <line>329</line>
+          <line>328</line>
           <option name="timeStamp" value="31" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/neural.py</url>
-          <line>331</line>
+          <line>330</line>
           <option name="timeStamp" value="32" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/neural.py</url>
-          <line>302</line>
+          <line>301</line>
           <option name="timeStamp" value="33" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/neural.py</url>
-          <line>313</line>
+          <line>312</line>
           <option name="timeStamp" value="34" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/neural.py</url>
-          <line>318</line>
+          <line>317</line>
           <option name="timeStamp" value="35" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/neural.py</url>
-          <line>327</line>
+          <line>326</line>
           <option name="timeStamp" value="36" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/mnms_da$.coverage" NAME=" Coverage Results" MODIFIED="1611938927160" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/mnms_da$.coverage" NAME=" Coverage Results" MODIFIED="1612367563470" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>

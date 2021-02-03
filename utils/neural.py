@@ -257,7 +257,7 @@ def calculate_loss(y_true, y_pred, criterion, weights_criterion, multiclass_crit
 
 def train_step(
     train_loader, model, criterion, weights_criterion, multiclass_criterion, optimizer, train_metrics,
-    coral, coral_loader, coral_weight, vol_task_weight
+    coral, coral_loader, coral_weight, vol_task_weight, num_classes
 ):
     """
 
@@ -281,8 +281,7 @@ def train_step(
         prob_preds = model(image)
 
         loss = calculate_loss(
-            label, prob_preds, criterion, weights_criterion, multiclass_criterion,
-            train_loader.dataset.num_classes
+            label, prob_preds, criterion, weights_criterion, multiclass_criterion, num_classes
         )
 
         task_loss += loss.item()
@@ -313,7 +312,7 @@ def train_step(
                 batch_0_label = batch_0["label"].squeeze().unsqueeze(1)  # [1, 1, s, h, w] -> [s, 1, h, w]
                 task_vol0_loss = calculate_loss(
                     batch_0_label.cuda(), pred_0.cuda(), criterion, weights_criterion, multiclass_criterion,
-                    train_loader.dataset.num_classes
+                    num_classes
                 )
 
                 c_loss = c_loss + (task_vol0_loss * vol_task_weight)
@@ -322,7 +321,7 @@ def train_step(
                 batch_1_label = batch_1["label"].squeeze().unsqueeze(1)  # [1, 1, s, h, w] -> [s, 1, h, w]
                 task_vol1_loss = calculate_loss(
                     batch_1_label.cuda(), pred_1.cuda(), criterion, weights_criterion, multiclass_criterion,
-                    train_loader.dataset.num_classes
+                    num_classes
                 )
 
                 c_loss = c_loss + (task_vol1_loss * vol_task_weight)
@@ -461,7 +460,8 @@ def val_coral_step(coral_loader, model, coral_weight, val_metrics, num_iters):
 
 
 def finish_swa(
-        swa_model, train_loader, val_loader, criterion, weights_criterion, multiclass_criterion, num_classes, args
+        swa_model, train_loader, val_loader, criterion, weights_criterion, multiclass_criterion,
+        num_classes, include_background, args
 ):
     if args.swa_start == -1:  # If swa was not used, do not perform nothing
         return
@@ -488,8 +488,8 @@ def finish_swa(
     )
 
     swa_metrics = MetricsAccumulator(
-        args.problem_type, args.metrics, train_loader.dataset.num_classes, average="mean",
-        include_background=train_loader.dataset.include_background, mask_reshape_method=args.mask_reshape_method
+        args.problem_type, args.metrics, num_classes, average="mean",
+        include_background=include_background, mask_reshape_method=args.mask_reshape_method
     )
 
     swa_metrics = val_step(

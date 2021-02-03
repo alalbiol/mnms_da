@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     model = model_selector(
         args.problem_type, args.model_name, test_loader.dataset.num_classes, from_swa=args.swa_checkpoint,
-        in_channels=test_loader.dataset.img_channels, devices=args.gpu, checkpoint=args.model_checkpoint
+        in_channels=3 if args.add_depth else 1, devices=args.gpu, checkpoint=args.model_checkpoint
     )
 
     print("Predicting...")

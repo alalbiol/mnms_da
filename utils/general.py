@@ -36,6 +36,24 @@ def convert_multiclass_mask(mask):
     return mask.max(1)[1]
 
 
+def map_mask_classes(mask, classes_map):
+    """
+
+    Args:
+        mask: (np.array) Mask Array to map (height, width)
+        classes_map: (dict) Mapping between classes. E.g.  {0:0, 1:3, 2:2, 3:1 ,4:4}
+
+    Returns: (np.array) Mapped mask array
+
+    """
+    res = np.zeros_like(mask).astype(mask.dtype)
+    for value in np.unique(mask):
+        if value not in classes_map:
+            assert False, f"Please specify all class maps. {value} not in {classes_map}"
+        res += np.where(mask == value, classes_map[value], 0).astype(mask.dtype)
+    return res
+
+
 def reshape_masks(ndarray, to_shape, mask_reshape_method):
     """
 

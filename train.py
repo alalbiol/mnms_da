@@ -16,14 +16,14 @@ if args.coral and args.coral_vendors is None:
 train_aug, train_aug_img, val_aug = data_augmentation_selector(
     args.data_augmentation, args.img_size, args.crop_size, args.mask_reshape_method
 )
-train_loader, val_loader = dataset_selector(train_aug, train_aug_img, val_aug, args)
+train_loader, val_loader, num_classes, class_to_cat, include_background = dataset_selector(train_aug, train_aug_img, val_aug, args)
 train_coral_loader = coral_dataset_selector(train_aug, train_aug_img, "Training", args) if args.coral else None
 val_coral_loader = coral_dataset_selector(val_aug, [], "Validation", args) if args.coral else None
-num_classes = train_loader.dataset.num_classes
+print(f"Number of classes: {num_classes}")
 
 model = model_selector(
     args.problem_type, args.model_name, num_classes,
-    in_channels=train_loader.dataset.img_channels, devices=args.gpu, checkpoint=args.model_checkpoint
+    in_channels=3 if args.add_depth else 1, devices=args.gpu, checkpoint=args.model_checkpoint
 )
 swa_model = None
 
@@ -39,24 +39,24 @@ swa_scheduler = get_scheduler("swa", optimizer, max_lr=args.swa_lr) if args.swa_
 
 train_metrics = MetricsAccumulator(
     args.problem_type, args.metrics, num_classes, average="mean",
-    include_background=train_loader.dataset.include_background, mask_reshape_method=args.mask_reshape_method
+    include_background=include_background, mask_reshape_method=args.mask_reshape_method
 )
 val_metrics = MetricsAccumulator(
     args.problem_type, args.metrics, num_classes, average="mean",
-    include_background=train_loader.dataset.include_background, mask_reshape_method=args.mask_reshape_method
+    include_background=include_background, mask_reshape_method=args.mask_reshape_method
 )
 
 full_criterion = [args.criterion]
 full_criterion += ["coral"] if args.coral else ""
 
-header, defrosted = build_header(train_loader.dataset.class_to_cat, full_criterion, args.metrics, display=True), False
+header, defrosted = build_header(class_to_cat, full_criterion, args.metrics, display=True), False
 for current_epoch in range(args.epochs):
 
     defrosted = check_defrost(model, defrosted, current_epoch, args.defrost_epoch)
 
     train_metrics = train_step(
         train_loader, model, criterion, weights_criterion, multiclass_criterion, optimizer, train_metrics,
-        args.coral, train_coral_loader, args.coral_weight, args.vol_task_weight
+        args.coral, train_coral_loader, args.coral_weight, args.vol_task_weight, num_classes
     )
 
     val_metrics = val_step(
@@ -88,4 +88,7 @@ for current_epoch in range(args.epochs):
 print("\nBest Validation Results:")
 val_metrics.report_best()
 
-finish_swa(swa_model, train_loader, val_loader, criterion, weights_criterion, multiclass_criterion, num_classes, args)
+finish_swa(
+    swa_model, train_loader, val_loader, criterion, weights_criterion, multiclass_criterion,
+    num_classes, include_background, args
+)
