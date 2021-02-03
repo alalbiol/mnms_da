@@ -333,7 +333,8 @@ def train_step(
 
     task_loss = task_loss / len(train_loader)
     train_metrics.add_losses("Train_loss", task_loss)
-    train_metrics.add_losses("Coral_loss", coral_loss)
+    if coral:
+        train_metrics.add_losses("Coral_loss", coral_loss)
     train_metrics.update()
     return train_metrics
 
