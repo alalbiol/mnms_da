@@ -71,10 +71,11 @@ generated_overlays=0
 criterion="bce_dice"
 weights_criterion="0.4, 0.5, 0.1"
 
-coral_weight=0.01
+coral_weight=0.1
+vol_task_weight=0.7
 
-output_dir="results/$dataset/$model/$optimizer/${scheduler}_lr${lr}/${criterion}_weights${weights_criterion}"
-output_dir="$output_dir/normalization_${normalization}/da${data_augmentation}"
+output_dir="results/$dataset/$model/coral_${coral_weight}_vol${vol_task_weight}/$optimizer/${scheduler}_lr${lr}"
+output_dir="$output_dir/${criterion}_weights${weights_criterion}/normalization_${normalization}/da${data_augmentation}"
 
 python3 -u train.py --gpu $gpu --dataset $dataset --model_name $model --img_size $img_size --crop_size $crop_size \
 --epochs $epochs --swa_start $swa_start --batch_size $batch_size --defrost_epoch $defrost_epoch \
@@ -82,7 +83,8 @@ python3 -u train.py --gpu $gpu --dataset $dataset --model_name $model --img_size
 --normalization $normalization --weights_criterion "$weights_criterion" --data_augmentation $data_augmentation \
 --output_dir "$output_dir" --metrics iou dice --problem_type $problem_type --mask_reshape_method $mask_reshape_method \
 --scheduler_steps 70 100 --generated_overlays $generated_overlays --add_depth --rand_histogram_matching \
---coral --coral_vendors A B --coral_weight $coral_weight
+--coral --coral_vendors A B --coral_weight $coral_weight --vol_task_weight $vol_task_weight
+#--model_checkpoint "$model_checkpoint"
 
 
 model_checkpoint="$output_dir/model_${model}_best_iou.pt"

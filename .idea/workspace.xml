@@ -2,8 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e74aa284-0ca1-4a3d-b39d-f37e6389a162" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/mms2d_covariances.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/mms2d_covariances.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/acdc172d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/acdc172d.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/mms2d_acdc172d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d_acdc172d.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d_coral.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d_coral.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -93,7 +96,9 @@
       <workItem from="1611831295415" duration="2687000" />
       <workItem from="1611937112374" duration="2875000" />
       <workItem from="1612252563768" duration="114000" />
-      <workItem from="1612365797894" duration="7460000" />
+      <workItem from="1612365797894" duration="7961000" />
+      <workItem from="1612515644866" duration="722000" />
+      <workItem from="1612773292008" duration="1041000" />
     </task>
     <task id="LOCAL-00001" summary="fix">
       <created>1607432585436</created>
@@ -172,7 +177,14 @@
       <option name="project" value="LOCAL" />
       <updated>1612382712868</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="fix">
+      <created>1612383063492</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1612383063492</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -191,7 +203,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix" />
     <MESSAGE value="clean" />
     <MESSAGE value="notify when finish" />
     <MESSAGE value="volume dataset, histogram matching data augmentation" />
@@ -201,7 +212,8 @@
     <MESSAGE value="more data partition options, coral improvements" />
     <MESSAGE value="integrating coral" />
     <MESSAGE value="concat acdc" />
-    <option name="LAST_COMMIT_MESSAGE" value="concat acdc" />
+    <MESSAGE value="fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

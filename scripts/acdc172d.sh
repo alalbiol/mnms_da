@@ -6,7 +6,7 @@ then
     echo "AC17 data not found at 'data' directory. Downloading..."
     curl -O -J https://nextcloud.maparla.duckdns.org/s/cAENNxDn4E4rm7z/download
     mkdir -p data
-    tar -zxf acdc_2017.tar.gz  -C data/
+    tar -zxf acdc_2017.tar.gz -C data/
     rm acdc_2017.tar.gz
     echo "Done!"
     [ "$1" == "only_data" ] && exit
