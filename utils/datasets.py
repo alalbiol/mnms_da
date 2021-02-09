@@ -366,6 +366,7 @@ def get_volume_loader(vendor, train_aug, train_aug_img, add_depth=True, partitio
     unlabeled = True if "unlabeled" in dataset or partition in ["Validation", "Testing"] else False
     c_centre = find_values(dataset, "centre", int)
     c_vendor = find_values(dataset, "vendor", str)
+    unlabeled = True if "C" in c_vendor else unlabeled  # Case exception! Vendor C is unlabeled for Training too
 
     dataset = MMs3DDataset(
         partition=partition, transform=train_aug, img_transform=train_aug_img, normalization=normalization,

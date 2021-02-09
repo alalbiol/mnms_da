@@ -151,26 +151,24 @@ def apply_volume_2Daugmentations(list_images, transform, img_transform, list_mas
     if transform:
         # All augmentations applied in same proportion and values
         imgs_ids = ["image"] + ["image{}".format(idx + 2) for idx in range(len(list_images) - 1)]
-        if list_masks is not None:
-            masks_ids = ["mask"] + ["mask{}".format(idx + 2) for idx in range(len(list_images) - 1)]
-
         aug_args = dict(zip(imgs_ids, list_images))
-        aug_args.update(dict(zip(masks_ids, list_masks)))
-
         pair_ids_imgs = ["image{}".format(idx + 2) for idx in range(len(list_images) - 1)]
         base_id_imgs = ["image"] * len(pair_ids_imgs)
-
-        pair_ids_masks = ["mask{}".format(idx + 2) for idx in range(len(list_masks) - 1)]
-        base_id_masks = ["mask"] * len(pair_ids_masks)
-
         list_additional_targets = dict(zip(pair_ids_imgs, base_id_imgs))
-        list_additional_targets.update(dict(zip(pair_ids_masks, base_id_masks)))
+
+        if list_masks is not None:
+            masks_ids = ["mask"] + ["mask{}".format(idx + 2) for idx in range(len(list_images) - 1)]
+            aug_args.update(dict(zip(masks_ids, list_masks)))
+            pair_ids_masks = ["mask{}".format(idx + 2) for idx in range(len(list_masks) - 1)]
+            base_id_masks = ["mask"] * len(pair_ids_masks)
+            list_additional_targets.update(dict(zip(pair_ids_masks, base_id_masks)))
 
         volumetric_aug = albumentations.Compose(transform, additional_targets=list_additional_targets)
         augmented = volumetric_aug(**aug_args)
 
         list_images = np.stack([augmented[img] for img in imgs_ids])
-        list_masks = np.stack([augmented[mask] for mask in masks_ids])
+        if list_masks is not None:
+            list_masks = np.stack([augmented[mask] for mask in masks_ids])
 
     return list_images, list_masks
 

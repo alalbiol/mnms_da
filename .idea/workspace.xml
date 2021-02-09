@@ -3,11 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="e74aa284-0ca1-4a3d-b39d-f37e6389a162" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/mms2d_covariances.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/mms2d_covariances.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/acdc172d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/acdc172d.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/mms2d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/Atr.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/Btr.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d_acdc172d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d_acdc172d.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d_coral.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d_coral.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/datasets.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,6 +20,17 @@
       <list>
         <option value="Python Script" />
       </list>
+    </option>
+  </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
     </option>
   </component>
   <component name="Git.Settings">
@@ -43,7 +55,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/scripts" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -99,6 +111,8 @@
       <workItem from="1612365797894" duration="7961000" />
       <workItem from="1612515644866" duration="722000" />
       <workItem from="1612773292008" duration="1041000" />
+      <workItem from="1612817581110" duration="249000" />
+      <workItem from="1612893965567" duration="636000" />
     </task>
     <task id="LOCAL-00001" summary="fix">
       <created>1607432585436</created>
@@ -184,7 +198,14 @@
       <option name="project" value="LOCAL" />
       <updated>1612383063492</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="coral things">
+      <created>1612817814100</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1612817814100</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -213,7 +234,8 @@
     <MESSAGE value="integrating coral" />
     <MESSAGE value="concat acdc" />
     <MESSAGE value="fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix" />
+    <MESSAGE value="coral things" />
+    <option name="LAST_COMMIT_MESSAGE" value="coral things" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -273,10 +295,35 @@
           <line>326</line>
           <option name="timeStamp" value="36" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/datasets.py</url>
+          <line>553</line>
+          <option name="timeStamp" value="37" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/datasets.py</url>
+          <line>557</line>
+          <option name="timeStamp" value="38" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/datasets.py</url>
+          <line>370</line>
+          <option name="timeStamp" value="39" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/datasets.py</url>
+          <line>243</line>
+          <option name="timeStamp" value="40" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/datasets.py</url>
+          <line>244</line>
+          <option name="timeStamp" value="41" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/mnms_da$.coverage" NAME=" Coverage Results" MODIFIED="1612367563470" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/mnms_da$.coverage" NAME=" Coverage Results" MODIFIED="1612894493151" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>
