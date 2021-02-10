@@ -308,6 +308,9 @@ def train_step(
             c_loss = coral_loss(pred_0_flat, pred_1_flat) * coral_weight
             coral_global += c_loss.item()
 
+            num_vols = (1 if batch_0["labeled_info"][0] == "Labeled" else 0) + \
+                       (1 if batch_1["labeled_info"][0] == "Labeled" else 0)
+
             if batch_0["labeled_info"][0] == "Labeled":
                 batch_0_label = batch_0["label"].squeeze().unsqueeze(1)  # [1, 1, s, h, w] -> [s, 1, h, w]
                 task_vol0_loss = calculate_loss(
@@ -315,7 +318,7 @@ def train_step(
                     num_classes
                 )
 
-                c_loss = c_loss + (task_vol0_loss * vol_task_weight)
+                c_loss = c_loss + ((task_vol0_loss * vol_task_weight) / num_vols)
 
             if batch_1["labeled_info"][0] == "Labeled":
                 batch_1_label = batch_1["label"].squeeze().unsqueeze(1)  # [1, 1, s, h, w] -> [s, 1, h, w]
@@ -324,7 +327,7 @@ def train_step(
                     num_classes
                 )
 
-                c_loss = c_loss + (task_vol1_loss * vol_task_weight)
+                c_loss = c_loss + ((task_vol1_loss * vol_task_weight) / num_vols)
 
             c_loss.backward()
 
