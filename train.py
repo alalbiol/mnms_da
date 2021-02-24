@@ -9,6 +9,7 @@ from utils.datasets import dataset_selector, coral_dataset_selector
 from utils.logging import log_epoch, build_header
 from utils.neural import *
 
+set_seed(args.seed)
 
 if args.coral and args.coral_vendors is None:
     assert False, "When coral selected specify which vendors use with '--coral_vendors'"

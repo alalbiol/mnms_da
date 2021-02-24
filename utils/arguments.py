@@ -12,7 +12,7 @@ class SmartFormatter(argparse.HelpFormatter):
         return argparse.HelpFormatter._split_lines(self, text, width)
 
 
-parser = argparse.ArgumentParser(description='PAIP 2020 Challenge - CRC Prediction', formatter_class=SmartFormatter)
+parser = argparse.ArgumentParser(description='MMS 2020 Challenge - Training', formatter_class=SmartFormatter)
 
 parser.add_argument("--gpu", type=str, default="0,1")
 parser.add_argument("--seed", type=int, default=2020)

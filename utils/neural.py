@@ -1,3 +1,4 @@
+import random
 from torch.optim.swa_utils import SWALR
 
 from utils.coral import coral_loss
@@ -256,8 +257,8 @@ def calculate_loss(y_true, y_pred, criterion, weights_criterion, multiclass_crit
 
 
 def train_step(
-    train_loader, model, criterion, weights_criterion, multiclass_criterion, optimizer, train_metrics,
-    coral, coral_loader, coral_weight, vol_task_weight, num_classes
+        train_loader, model, criterion, weights_criterion, multiclass_criterion, optimizer, train_metrics,
+        coral, coral_loader, coral_weight, vol_task_weight, num_classes
 ):
     """
 
@@ -504,3 +505,23 @@ def finish_swa(
 
     print("SWA validation metrics")
     swa_metrics.report_best()
+
+
+class LambdaLR:
+    def __init__(self, epochs, offset, decay_epoch):
+        self.epochs = epochs
+        self.offset = offset
+        self.decay_epoch = decay_epoch
+
+    def step(self, epoch):
+        return 1.0 - max(0, epoch + self.offset - self.decay_epoch) / (self.epochs - self.decay_epoch)
+
+
+def set_seed(seed):
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)

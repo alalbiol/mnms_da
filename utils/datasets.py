@@ -21,14 +21,14 @@ class MMs2DDataset(Dataset):
 
     def __init__(self, partition, transform, img_transform, normalization="normalize", add_depth=True,
                  is_labeled=True, centre=None, vendor=None, end_volumes=True, data_relative_path="",
-                 only_phase="", rand_histogram_matching=False, patients_percentage=1):
+                 only_phase="", rand_histogram_matching=False, patients_percentage=1, check_labeled=True):
         """
         :param partition: (string) Dataset partition in ["Training", "Validation", "Test"]
         :param transform: (list) List of albumentations applied to image and mask
         :param img_transform: (list) List of albumentations applied to image only
         :param normalization: (str) Normalization mode. One of 'reescale', 'standardize', 'global_standardize'
         :param add_depth: (bool) Whether transform or not 1d slices to 3 channels images
-        :param is_labeled: (bool) Dataset partition in ["Training", "Validation", "Test"]
+        :param is_labeled: (bool) labeled data (masked)
         :param centre: (int) Select by centre label. Available [1, 2, 3, 4, 5]
         :param vendor: (string) Select by vendor label. Available ["A", "B", "C", "D"]
         :param end_volumes: (bool) Whether only include 'ED' and 'ES' phases ((to) segmented) or all
@@ -47,14 +47,16 @@ class MMs2DDataset(Dataset):
         self.class_to_cat = {1: "LV", 2: "MYO", 3: "RV", 4: "Mean"}
         self.include_background = False
         self.num_classes = 4  # background - LV - MYO - RV
+        self.vendor2label = {"A": 0, "B": 1, "C": 2, "D": 3}
 
         data = pd.read_csv(os.path.join(self.base_dir, "slices_info.csv"))
-        if "All" not in self.partition:
-            data = data.loc[(data["Partition"] == partition)]
-            data = data.loc[(data["Labeled"] == is_labeled)]
-        else:
+        if "All" in self.partition:
             # Training and Unlabeled (vendor C) is not labeled!
             data = data.loc[((data['Partition'] == "Training") & (data['Labeled'])) | (data['Partition'] != "Training")]
+        else:
+            data = data.loc[(data["Partition"] == partition)]
+            data = data if not check_labeled else data.loc[(data["Labeled"] == is_labeled)]
+
         if vendor is not None:
             data = data.loc[data['Vendor'].isin(vendor)]
         if centre is not None:
@@ -71,14 +73,18 @@ class MMs2DDataset(Dataset):
         if patients_percentage != 1:
             patient_list = np.sort(data["External code"].unique())
             np.random.seed(1)
-            train_indx = np.random.choice(range(len(patient_list)),
-                                          size=(int(patients_percentage * len(patient_list)),), replace=False)
+            train_indx = np.random.choice(
+                range(len(patient_list)),
+                size=(int(patients_percentage * len(patient_list))),
+                replace=False
+            )
             train_patients = patient_list[train_indx]
             data = data.loc[data["External code"].isin(train_patients)]
 
         data = data.reset_index(drop=True)
 
         self.data = data
+        self.num_vendors = len(data["Vendor"].unique())
         self.data_meta = pd.read_csv(os.path.join(self.base_dir, "volume_info_statistics.csv"))
 
         self.add_depth = add_depth
@@ -106,6 +112,7 @@ class MMs2DDataset(Dataset):
 
         """
         # We have to modify "original_mask" as has different shapes
+        not_stack_items = ["original_mask", "original_img", "img_id", "vendor_label"]
         batch_keys = list(batch[0].keys())
         res = {bkey: [] for bkey in batch_keys}
         for belement in batch:
@@ -113,7 +120,7 @@ class MMs2DDataset(Dataset):
                 res[bkey].append(belement[bkey])
 
         for bkey in batch_keys:
-            if bkey == "original_mask" or bkey == "original_img" or bkey == "img_id":
+            if bkey in not_stack_items:
                 continue  # We wont stack over original_mask...
             res[bkey] = torch.stack(res[bkey]) if None not in res[bkey] else None
 
@@ -148,7 +155,8 @@ class MMs2DDataset(Dataset):
         elif c_phase == df_entry["ES"]:
             c_phase_str = "ES"
         else:
-            assert False, "Not in ED or ES phases?!"
+            # assert False, "Not in ED or ES phases?!"
+            c_phase_str = "UnknownPhase"
         c_vendor = df_entry["Vendor"]
         c_centre = df_entry["Centre"]
         meta_entry = self.data_meta.loc[self.data_meta["External code"] == external_code]
@@ -156,7 +164,8 @@ class MMs2DDataset(Dataset):
 
         labeled_info = ""
         if c_partition == "Training":
-            labeled_info = "Labeled" if df_entry["Labeled"] else "Unlabeled"
+            has_labeled = np.sum(self.data.loc[self.data["External code"] == external_code]["Labeled"].tolist()) > 0
+            labeled_info = "Labeled" if (df_entry["Labeled"] or has_labeled) else "Unlabeled"
 
         img_path = os.path.join(
             self.base_dir, c_partition, labeled_info, external_code,
@@ -205,7 +214,8 @@ class MMs2DDataset(Dataset):
 
         return {
             "img_id": img_id, "image": image, "label": mask,
-            "original_img": original_image, "original_mask": original_mask
+            "original_img": original_image, "original_mask": original_mask,
+            "vendor_label": self.vendor2label[c_vendor]
         }
 
 
@@ -351,11 +361,13 @@ class MMs3DDataset(Dataset):
         }
 
 
-def get_volume_loader(vendor, train_aug, train_aug_img, add_depth=True, partition="Training", data_relative_path=""):
+def get_volume_loader(
+        vendor, train_aug, train_aug_img, add_depth=True, partition="Training",
+        data_relative_path="", normalization="standardize"
+):
     """
     Helper function for easily create data loaders for coral loss application
     """
-    normalization = "standardize"
     data_mod = ""
 
     batch_size = 1
@@ -699,6 +711,7 @@ def dataset_selector(train_aug, train_aug_img, val_aug, args, is_test=False):
         only_end = False if "full" in args.dataset else True
         unlabeled = True if "unlabeled" in args.dataset else False
         c_centre, c_vendor = find_values(args.dataset, "centre", int), find_values(args.dataset, "vendor", str)
+        check_labeled = True if not "ncl" in args.dataset else False  # ncl = no check labeled
 
         if "all" in args.dataset:
             train_dataset = MMs2DDataset(
@@ -717,13 +730,14 @@ def dataset_selector(train_aug, train_aug_img, val_aug, args, is_test=False):
                 partition="Training", transform=train_aug, img_transform=train_aug_img,
                 normalization=args.normalization,
                 add_depth=args.add_depth, is_labeled=(not unlabeled), centre=c_centre, vendor=c_vendor,
-                end_volumes=only_end, rand_histogram_matching=args.rand_histogram_matching
-                , patients_percentage=args.patients_percentage
+                end_volumes=only_end, rand_histogram_matching=args.rand_histogram_matching,
+                patients_percentage=args.patients_percentage, check_labeled=check_labeled
             )
 
             val_dataset = MMs2DDataset(
                 partition="Validation", transform=val_aug, img_transform=[], normalization=args.normalization,
-                add_depth=args.add_depth, is_labeled=False, centre=None, vendor=None, end_volumes=True
+                add_depth=args.add_depth, is_labeled=False, centre=None, vendor=None, end_volumes=True,
+                check_labeled=check_labeled
             )
 
         train_datasets.append(train_dataset)
@@ -745,36 +759,52 @@ def dataset_selector(train_aug, train_aug_img, val_aug, args, is_test=False):
         train_datasets.append(train_dataset)
         val_datasets.append(val_dataset)
 
-    if len(train_datasets) == 0 and len(train_datasets) == 0:
+    if len(train_datasets) == 0 and len(val_datasets) == 0:
         assert False, f"Unknown dataset '{args.dataset}'"
 
-    train_dataset = torch.utils.data.ConcatDataset(train_datasets)
-    train_loader = DataLoader(
-        train_dataset, batch_size=args.batch_size, pin_memory=True,
-        shuffle=True, collate_fn=train_datasets[0].custom_collate
-    )
-    val_dataset = torch.utils.data.ConcatDataset(val_datasets)
-    val_loader = DataLoader(
-        val_dataset, batch_size=args.batch_size, shuffle=False, pin_memory=True,
-        drop_last=False, collate_fn=val_datasets[0].custom_collate
-    )
+    elif len(train_datasets) == 1 and len(val_datasets) == 1:
+        train_loader = DataLoader(
+            train_datasets[0], batch_size=args.batch_size, pin_memory=True,
+            shuffle=True, collate_fn=train_datasets[0].custom_collate
+        )
+        val_loader = DataLoader(
+            val_datasets[0], batch_size=args.batch_size, shuffle=False, pin_memory=True,
+            drop_last=False, collate_fn=val_datasets[0].custom_collate
+        )
 
-    num_classes, class_to_cat, include_background = [], None, None
-    for dataset in train_datasets:
-        num_classes.append(dataset.num_classes)
-        if class_to_cat is None:
-            class_to_cat = dataset.class_to_cat
-            include_background = dataset.include_background
-        else:
-            if class_to_cat != dataset.class_to_cat:
-                assert False, "Class to category from different datasets must be the same!"
-            if include_background != dataset.include_background:
-                assert False, "If one dataset includes background as a class, all should!"
+        num_classes = train_datasets[0].num_classes
+        class_to_cat = train_datasets[0].class_to_cat
+        include_background = train_datasets[0].include_background
 
-    num_classes = np.array(num_classes)
-    if not np.all(num_classes == num_classes[0]):
-        print(f"Hay datasets con diferentes número de clases: {num_classes}")
+    else:
+        train_dataset = torch.utils.data.ConcatDataset(train_datasets)
+        train_loader = DataLoader(
+            train_dataset, batch_size=args.batch_size, pin_memory=True,
+            shuffle=True, collate_fn=train_datasets[0].custom_collate
+        )
+        val_dataset = torch.utils.data.ConcatDataset(val_datasets)
+        val_loader = DataLoader(
+            val_dataset, batch_size=args.batch_size, shuffle=False, pin_memory=True,
+            drop_last=False, collate_fn=val_datasets[0].custom_collate
+        )
+
+        num_classes, class_to_cat, include_background = [], None, None
+        for dataset in train_datasets:
+            num_classes.append(dataset.num_classes)
+            if class_to_cat is None:
+                class_to_cat = dataset.class_to_cat
+                include_background = dataset.include_background
+            else:
+                if class_to_cat != dataset.class_to_cat:
+                    assert False, "Class to category from different datasets must be the same!"
+                if include_background != dataset.include_background:
+                    assert False, "If one dataset includes background as a class, all should!"
+
+        num_classes = np.array(num_classes)
+        if not np.all(num_classes == num_classes[0]):
+            print(f"Hay datasets con diferentes número de clases: {num_classes}")
+        num_classes = num_classes.max()
 
     print(f"Train dataset len:  {len(train_dataset)}")
     print(f"Validation dataset len:  {len(val_dataset)}")
-    return train_loader, val_loader, num_classes.max(), class_to_cat, include_background
+    return train_loader, val_loader, num_classes, class_to_cat, include_background
