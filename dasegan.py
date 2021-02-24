@@ -70,7 +70,7 @@ for epoch in range(args.epochs):
         # step
         step = epoch * len(vol_loader) + batch_indx + 1
         vol_x = batch["image"].cuda()
-        vol_x_original_label = torch.from_numpy(np.array(batch["vendor_label"]))
+        vol_x_original_label = torch.from_numpy(np.array(batch["vendor_label"])).cuda()
         img_id = batch["img_id"]
 
         #####################################################
@@ -135,7 +135,7 @@ for epoch in range(args.epochs):
                     c_pred_u = convert_multiclass_mask(pred_u[indx].unsqueeze(0)).data.cpu().numpy().squeeze()
                     plot_save_generated(
                         vol_x[indx].data.cpu().numpy()[0], vol_u[indx].data.cpu().numpy()[0], c_pred_x, c_pred_u,
-                        os.path.join(args.output_dir, "generated_samples"), img_id[indx]
+                        os.path.join(args.output_dir, "generated_samples", f"epoch_{epoch}"), img_id[indx]
                     )
                     current_generated_samples += 1
                 else:

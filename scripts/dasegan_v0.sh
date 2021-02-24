@@ -28,6 +28,7 @@ fi
 
 gpu="0,1"
 dataset="mms2d_full_unlabeled_ncl"
+seed=42
 
 seg_net="resnet18_unet_scratch"
 dis_net="n_layers"
@@ -38,17 +39,14 @@ norm_layer="instance"
 ngf=64
 ndf=64
 
-seg_checkpoint="checks/resnet18_unet/model_resnet18_unet_scratch_best_iou.pt"
+seg_checkpoint="checks/segmentator/model_resnet18_unet_scratch_last.pt"
 dis_checkpoint=""
 gen_checkpoint=""
 
-cycle_coef=0.5
 
-seed=42
-
-img_size=224
-crop_size=224
-batch_size=8
+img_size=256
+crop_size=256
+batch_size=16
 
 epochs=200
 decay_epoch=100
@@ -60,7 +58,11 @@ data_augmentation="mms2d"
 normalization="standardize"
 mask_reshape_method="padd"
 
-generated_samples=10
+generated_samples=25
+
+#cycle_coef=0.5
+for cycle_coef in 0.5 1.0
+do
 
 model_dir="GENERATOR_${gen_net}_DISCRIMINATOR_${dis_net}_SEGMENTATOR_${seg_net}"
 output_dir="results/$dataset/DASEGAN/$model_dir/lr${lr}_cyclecoef${cycle_coef}"
@@ -76,6 +78,7 @@ python3 -u dasegan.py --gpu $gpu --seed $seed  --output_dir "$output_dir" \
 --cycle_coef $cycle_coef \
 --generated_samples $generated_samples
 
+done
 
 ############################################################
 python tools/notify.py --msg "DASEGAN - Experiments Finished"

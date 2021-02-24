@@ -78,3 +78,10 @@ if not os.path.exists(args.output_dir):
 # https://stackoverflow.com/a/55114771
 with open(os.path.join(args.output_dir, 'commandline_args.txt'), 'w') as f:
     json.dump(args.__dict__, f, indent=2)
+
+str_ids = args.gpu.split(',')
+args.gpu = []
+for str_id in str_ids:
+    gpu_id = int(str_id)
+    if gpu_id >= 0:
+        args.gpu.append(gpu_id)

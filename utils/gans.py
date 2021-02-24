@@ -41,7 +41,10 @@ def init_weights(net, init_type='normal', gain=0.02):
 
 
 def init_network(net, gpu_ids=[]):
-    net = torch.nn.DataParallel(net, device_ids=range(torch.cuda.device_count()))
+    if len(gpu_ids) > 0:
+        assert(torch.cuda.is_available())
+        net.cuda(gpu_ids[0])
+        net = torch.nn.DataParallel(net, gpu_ids)
     init_weights(net)
     return net
 
@@ -346,7 +349,7 @@ def labels2rfield(labels, shape):
     # with random labels, we have to transform list labels shape [batch] to [batch, 1, 1, 1]
     # eg. labels -> [0,1,0,2,0]
     labels = labels.unsqueeze(1).unsqueeze(1).unsqueeze(1)
-    labels = torch.ones(shape) * labels
+    labels = torch.ones(shape).to(labels.device) * labels
     return labels
 
 
