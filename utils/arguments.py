@@ -77,6 +77,13 @@ parser.add_argument('--selected_class', type=str, default="", help='If there is 
 
 parser.add_argument('--patients_percentage', type=float, default=1, help='Train patients percentage (from 0 to 1)')
 
+
+parser.add_argument('--gen_net', type=str, default='resnet_9blocks', help='Model name for Generator')
+parser.add_argument('--ngf', type=int, default=64, help='# of generator filters in first conv layer')
+parser.add_argument('--norm_layer', type=str, default='instance', help='instance normalization or batch normalization')
+parser.add_argument('--no_dropout', action='store_true', help='no dropout for the generator')
+parser.add_argument('--gen_checkpoint', type=str, default="", help='If there is a generator checkpoint to load')
+
 args = parser.parse_args()
 
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
@@ -94,3 +101,10 @@ if not os.path.exists(args.output_dir):
 # https://stackoverflow.com/a/55114771
 with open(os.path.join(args.output_dir, 'commandline_args.txt'), 'w') as f:
     json.dump(args.__dict__, f, indent=2)
+
+str_ids = args.gpu.split(',')
+args.gpu = []
+for str_id in str_ids:
+    gpu_id = int(str_id)
+    if gpu_id >= 0:
+        args.gpu.append(gpu_id)

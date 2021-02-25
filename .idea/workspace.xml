@@ -3,13 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="e74aa284-0ca1-4a3d-b39d-f37e6389a162" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/Atr.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/Btr.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/mms2d_acdc172d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d_acdc172d.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/mms2d_coral.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d_coral.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/predict.py" beforeDir="false" afterPath="$PROJECT_DIR$/predict.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/arguments.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/arguments.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/datasets.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/gans.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/gans.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/neural.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/neural.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -56,7 +53,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/utils" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/scripts" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
@@ -121,6 +118,7 @@
       <workItem from="1612962244201" duration="45000" />
       <workItem from="1612962373305" duration="661000" />
       <workItem from="1614073682640" duration="28135000" />
+      <workItem from="1614241268351" duration="1066000" />
     </task>
     <task id="LOCAL-00001" summary="fix">
       <created>1607432585436</created>

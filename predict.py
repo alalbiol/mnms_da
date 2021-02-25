@@ -6,6 +6,7 @@ from models import *
 from utils.arguments import *
 from utils.data_augmentation import data_augmentation_selector
 from utils.dataload import dataset_selector, save_nii
+from utils.gans import define_Gen
 from utils.general import *
 import warnings
 
@@ -27,6 +28,14 @@ if __name__ == "__main__":
         in_channels=3 if args.add_depth else 1, devices=args.gpu, checkpoint=args.model_checkpoint
     )
 
+    generator = None
+    if args.gen_checkpoint != "":
+        generator = define_Gen(
+            input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm_layer,
+            use_dropout=not args.no_dropout, gpu_ids=args.gpu, checkpoint=args.gen_checkpoint
+        )
+        generator.eval()
+
     print("Predicting...")
     model.eval()
     with torch.no_grad():
@@ -34,6 +43,10 @@ if __name__ == "__main__":
 
             ed_volume = ed_volume.type(torch.float).cuda()
             es_volume = es_volume.type(torch.float).cuda()
+
+            if generator is not None:
+                ed_volume = generator(ed_volume)
+                es_volume = generator(es_volume)
 
             prob_pred_ed = model(ed_volume)
             prob_pred_es = model(es_volume)

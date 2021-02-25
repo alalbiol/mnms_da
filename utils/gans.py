@@ -217,7 +217,7 @@ def define_Gen(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, 
 
     if checkpoint != "":
         print("Loaded model from checkpoint: {}".format(checkpoint))
-        model.load_state_dict(torch.load(checkpoint))
+        model.load_state_dict(torch.load(checkpoint)["generator"])
 
     return model
 

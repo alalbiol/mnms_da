@@ -258,7 +258,7 @@ def calculate_loss(y_true, y_pred, criterion, weights_criterion, multiclass_crit
 
 def train_step(
         train_loader, model, criterion, weights_criterion, multiclass_criterion, optimizer, train_metrics,
-        coral, coral_loader, coral_weight, vol_task_weight, num_classes
+        coral, coral_loader, coral_weight, vol_task_weight, num_classes, generator=None
 ):
     """
 
@@ -279,6 +279,10 @@ def train_step(
     for batch_indx, batch in enumerate(train_loader):
         image, label = batch["image"].cuda(), batch["label"].cuda()
         optimizer.zero_grad()
+
+        if generator is not None:
+            image = generator(image)
+
         prob_preds = model(image)
 
         loss = calculate_loss(
@@ -298,6 +302,10 @@ def train_step(
             batch_1_vol = batch_1["volume"].squeeze()
 
             batch = torch.cat((batch_0_vol, batch_1_vol), 0)
+
+            if generator is not None:
+                batch = generator(batch)
+
             pred = model(batch)
 
             pred_0 = pred[:len(batch_0_vol)]
@@ -345,7 +353,7 @@ def train_step(
 
 
 def val_step(val_loader, model, val_metrics, criterion, weights_criterion, multiclass_criterion, num_classes,
-             generated_overlays=1, overlays_path=""):
+             generated_overlays=1, overlays_path="", generator=None):
     if generated_overlays != 1 and overlays_path != "":
         os.makedirs(overlays_path, exist_ok=True)
 
@@ -355,6 +363,10 @@ def val_step(val_loader, model, val_metrics, criterion, weights_criterion, multi
         for batch_indx, batch in enumerate(val_loader):
             img_id = batch["img_id"]
             image, label = batch["image"].cuda(), batch["label"].cuda()
+
+            if generator is not None:
+                image = generator(image)
+
             prob_preds = model(image)
 
             loss = calculate_loss(

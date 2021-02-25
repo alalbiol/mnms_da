@@ -6,6 +6,7 @@ from models import model_selector
 from utils.arguments import *
 from utils.data_augmentation import data_augmentation_selector
 from utils.datasets import dataset_selector, coral_dataset_selector
+from utils.gans import define_Gen, set_grad
 from utils.logging import log_epoch, build_header
 from utils.neural import *
 
@@ -17,7 +18,8 @@ if args.coral and args.coral_vendors is None:
 train_aug, train_aug_img, val_aug = data_augmentation_selector(
     args.data_augmentation, args.img_size, args.crop_size, args.mask_reshape_method
 )
-train_loader, val_loader, num_classes, class_to_cat, include_background = dataset_selector(train_aug, train_aug_img, val_aug, args)
+train_loader, val_loader, num_classes, class_to_cat, include_background = dataset_selector(train_aug, train_aug_img,
+                                                                                           val_aug, args)
 train_coral_loader = coral_dataset_selector(train_aug, train_aug_img, "Training", args) if args.coral else None
 val_coral_loader = coral_dataset_selector(val_aug, [], "Validation", args) if args.coral else None
 print(f"Number of classes: {num_classes}")
@@ -27,6 +29,15 @@ model = model_selector(
     in_channels=3 if args.add_depth else 1, devices=args.gpu, checkpoint=args.model_checkpoint
 )
 swa_model = None
+
+generator = None
+if args.gen_checkpoint != "":
+    generator = define_Gen(
+        input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm_layer,
+        use_dropout=not args.no_dropout, gpu_ids=args.gpu, checkpoint=args.gen_checkpoint
+    )
+    set_grad([generator], False)
+    generator.eval()
 
 criterion, weights_criterion, multiclass_criterion = get_criterion(args.criterion, args.weights_criterion)
 optimizer = get_optimizer(args.optimizer, model, lr=args.learning_rate)
@@ -57,12 +68,14 @@ for current_epoch in range(args.epochs):
 
     train_metrics = train_step(
         train_loader, model, criterion, weights_criterion, multiclass_criterion, optimizer, train_metrics,
-        args.coral, train_coral_loader, args.coral_weight, args.vol_task_weight, num_classes
+        args.coral, train_coral_loader, args.coral_weight, args.vol_task_weight, num_classes,
+        generator=generator
     )
 
     val_metrics = val_step(
         val_loader, model, val_metrics, criterion, weights_criterion, multiclass_criterion, num_classes,
-        generated_overlays=args.generated_overlays, overlays_path=f"{args.output_dir}/overlays/epoch_{current_epoch}"
+        generated_overlays=args.generated_overlays, overlays_path=f"{args.output_dir}/overlays/epoch_{current_epoch}",
+        generator=generator
     )
 
     # ToDo
