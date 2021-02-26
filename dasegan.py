@@ -55,14 +55,13 @@ d_lr_scheduler = torch.optim.lr_scheduler.LambdaLR(
     d_optimizer, lr_lambda=LambdaLR(args.epochs, 0, args.decay_epoch).step
 )
 
-
+print("\n\n --- START TRAINING --\n")
 set_grad([segmentator], False)
 
 for epoch in range(args.epochs):
 
     current_generated_samples = 0
     lr = g_optimizer.param_groups[0]['lr']
-    print('learning rate = %.7f' % lr)
 
     epoch_gen_loss, epoch_dis_loss = [], []
 
@@ -142,7 +141,7 @@ for epoch in range(args.epochs):
                     break
 
     epoch_gen_loss, epoch_dis_loss = np.array(epoch_gen_loss).mean(), np.array(epoch_dis_loss).mean()
-    print(f"Epoch {epoch} | Gen Loss: {epoch_gen_loss} | Dis Loss: {epoch_dis_loss}")
+    print(f"Epoch {epoch} | lr: {lr} | Gen Loss: {epoch_gen_loss} | Dis Loss: {epoch_dis_loss}")
 
     # ---- Checkpoint ----
     torch.save(
@@ -154,7 +153,7 @@ for epoch in range(args.epochs):
             'd_optimizer': d_optimizer.state_dict(),
             'g_optimizer': g_optimizer.state_dict()
         },
-        f'{args.output_dir}/checkpoint_epoch{epoch+1}.pt'
+        f'{args.output_dir}/checkpoint_epoch{epoch + 1}.pt'
     )
 
     # -- Update learning rates --
