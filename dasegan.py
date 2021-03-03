@@ -55,9 +55,9 @@ d_lr_scheduler = torch.optim.lr_scheduler.LambdaLR(
     d_optimizer, lr_lambda=LambdaLR(args.epochs, 0, args.decay_epoch).step
 )
 
-
-print("\n --- START TRAINING ---")
+print("\n\n --- START TRAINING --\n")
 set_grad([segmentator], False)
+
 for epoch in range(args.epochs):
 
     current_generated_samples = 0
@@ -153,7 +153,7 @@ for epoch in range(args.epochs):
             'd_optimizer': d_optimizer.state_dict(),
             'g_optimizer': g_optimizer.state_dict()
         },
-        f'{args.output_dir}/checkpoint_epoch{epoch+1}.pt'
+        f'{args.output_dir}/checkpoint_epoch{epoch + 1}.pt'
     )
 
     # -- Update learning rates --
