@@ -73,7 +73,7 @@ weights_criterion="0.4, 0.5, 0.1"
 
 gen_net="resnet_9blocks"
 gen_upsample="interpolation"
-gen_checkpoint="checks/generator/resnet_9blocks_v0_checkpoint_epoch15.pt"
+gen_checkpoint="checks/generator/dasegan_v02_checkpoint_epoch109.pt"
 norm_layer="instance"
 ngf=64
 
@@ -87,7 +87,7 @@ python3 -u train.py --gpu $gpu --dataset $dataset --model_name $model --img_size
 --normalization $normalization --weights_criterion "$weights_criterion" --data_augmentation $data_augmentation \
 --output_dir "$output_dir" --metrics iou dice --problem_type $problem_type --mask_reshape_method $mask_reshape_method \
 --scheduler_steps 70 100 --generated_overlays $generated_overlays --add_depth \
---gen_net $gen_net --$gen_upsample $gen_upsample --gen_checkpoint $gen_checkpoint --norm_layer $norm_layer --ngf $ngf
+--gen_net $gen_net --gen_upsample $gen_upsample --gen_checkpoint $gen_checkpoint --norm_layer $norm_layer --ngf $ngf
 
 
 model_checkpoint="$output_dir/model_${model}_best_iou.pt"
@@ -96,7 +96,7 @@ python3 -u predict.py --gpu $gpu --dataset $dataset --model_name $model --img_si
 --batch_size $batch_size --normalization $normalization --output_dir "$eval_dir" \
 --problem_type $problem_type --mask_reshape_method $mask_reshape_method --metrics iou dice \
 --generated_overlays $generated_overlays --add_depth --model_checkpoint "$model_checkpoint" \
---gen_net $gen_net --$gen_upsample $gen_upsample  --gen_checkpoint $gen_checkpoint --norm_layer $norm_layer --ngf $ngf
+--gen_net $gen_net --gen_upsample $gen_upsample  --gen_checkpoint $gen_checkpoint --norm_layer $norm_layer --ngf $ngf
 
 python3 -u tools/metrics_mnms.py --GT_IMG "data/MMs/Testing" --PRED_IMG "$eval_dir/test_predictions"  # --REMOVE_PREDS
 
@@ -108,7 +108,7 @@ python3 -u predict.py --gpu $gpu --dataset $dataset --model_name $model --img_si
 --batch_size $batch_size --normalization $normalization --output_dir "$eval_dir" \
 --problem_type $problem_type --mask_reshape_method $mask_reshape_method --metrics iou dice \
 --generated_overlays $generated_overlays --add_depth --model_checkpoint "$model_checkpoint" --swa_checkpoint \
---gen_net $gen_net --$gen_upsample $gen_upsample  --gen_checkpoint $gen_checkpoint --norm_layer $norm_layer --ngf $ngf
+--gen_net $gen_net --gen_upsample $gen_upsample  --gen_checkpoint $gen_checkpoint --norm_layer $norm_layer --ngf $ngf
 
 
 python3 -u tools/metrics_mnms.py --GT_IMG "data/MMs/Testing" --PRED_IMG "$eval_dir/test_predictions"  # --REMOVE_PREDS

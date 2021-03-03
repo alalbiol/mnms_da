@@ -79,6 +79,10 @@ parser.add_argument('--patients_percentage', type=float, default=1, help='Train 
 
 
 parser.add_argument('--gen_net', type=str, default='resnet_9blocks', help='Model name for Generator')
+parser.add_argument(
+    '--gen_upsample', type=str, default="interpolation", help='How to perform upsample steps in generator architecture',
+    choices=['interpolation', 'deconvolution']
+)
 parser.add_argument('--ngf', type=int, default=64, help='# of generator filters in first conv layer')
 parser.add_argument('--norm_layer', type=str, default='instance', help='instance normalization or batch normalization')
 parser.add_argument('--no_dropout', action='store_true', help='no dropout for the generator')
