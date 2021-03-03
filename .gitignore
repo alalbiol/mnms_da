@@ -141,6 +141,7 @@ data/*
 # Results
 results/*
 !results/.gitkeep
+DASEGAN_EXPERIMENTS/*
 
 # Nifti files
 *.nii.gz
