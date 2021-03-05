@@ -3,6 +3,7 @@
 
 # ---- My utils ----
 from models import model_selector
+from models.gan import define_Gen, define_Dis
 from utils.dasegan_arguments import *
 from utils.data_augmentation import data_augmentation_selector
 from utils.datasets import dataset_selector
