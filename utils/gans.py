@@ -62,8 +62,6 @@ def labels2rfield(labels, shape):
 
 
 def plot_save_generated(original_img, generated_img, original_img_mask, generated_img_mask, save_dir, img_id):
-    import warnings
-    warnings.filterwarnings('ignore')
 
     os.makedirs(save_dir, exist_ok=True)
     fig, (ax1, ax2) = plt.subplots(2, 2, figsize=(14, 6))
@@ -92,3 +90,51 @@ def plot_save_generated(original_img, generated_img, original_img_mask, generate
     )
     plt.savefig(pred_filename, dpi=200, bbox_inches='tight')
     plt.close()
+
+
+def plot_save_kernels(kernel, save_dir,  path_info="", by_kernel=True):
+    """
+    kernel with shape: (batch, channels, height, width)
+    """
+
+    os.makedirs(save_dir, exist_ok=True)
+
+    height, width = kernel.shape[2], kernel.shape[3]
+
+    for sample in range(kernel.shape[0]):
+
+        if by_kernel:
+
+            for kernel_index in range(kernel.shape[1]):
+
+                plt.figure(figsize=(14, 6))
+                plt.axis('off')
+                plt.imshow(kernel[sample, kernel_index, ...], cmap="gray")
+
+                kernel_save_dir = os.path.join(
+                    save_dir, f"sample_{sample}", f"{height}x{width}{path_info}"
+                )
+                os.makedirs(kernel_save_dir, exist_ok=True)
+                pred_filename = os.path.join(
+                    kernel_save_dir,
+                    f"kernel_{kernel_index}.png",
+                )
+                plt.savefig(pred_filename, dpi=200, bbox_inches='tight')
+                plt.close()
+
+        else:
+
+            plt.figure(figsize=(14, 6))
+            plt.axis('off')
+            plt.imshow(kernel[sample, ...], cmap="gray")
+
+            kernel_save_dir = os.path.join(
+                save_dir, f"sample_{sample}", f"{height}x{width}{path_info}"
+            )
+            os.makedirs(kernel_save_dir, exist_ok=True)
+            pred_filename = os.path.join(
+                kernel_save_dir,
+                f"{kernel.shape[1]}kernels.png",
+            )
+            plt.savefig(pred_filename, dpi=200, bbox_inches='tight')
+            plt.close()

@@ -6,11 +6,8 @@ from models import *
 from utils.arguments import *
 from utils.data_augmentation import data_augmentation_selector
 from utils.dataload import dataset_selector, save_nii
-from utils.gans import define_Gen
+from models.gan import define_Gen
 from utils.general import *
-import warnings
-
-warnings.filterwarnings('ignore')
 
 if __name__ == "__main__":
 

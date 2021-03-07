@@ -125,8 +125,6 @@ def binarize_volume_prediction(volume_pred, original_shape=None, mask_reshape_me
 
 
 def plot_save_pred(original_img, original_mask, pred_mask, save_dir, img_id):
-    import warnings
-    warnings.filterwarnings('ignore')
 
     os.makedirs(save_dir, exist_ok=True)
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(14, 6))
