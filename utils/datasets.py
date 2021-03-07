@@ -112,7 +112,7 @@ class MMs2DDataset(Dataset):
 
         """
         # We have to modify "original_mask" as has different shapes
-        not_stack_items = ["original_mask", "original_img", "img_id", "vendor_label"]
+        not_stack_items = ["original_mask", "original_img", "img_id", "vendor_label", "inestable_label"]
         batch_keys = list(batch[0].keys())
         res = {bkey: [] for bkey in batch_keys}
         for belement in batch:
@@ -215,7 +215,7 @@ class MMs2DDataset(Dataset):
         return {
             "img_id": img_id, "image": image, "label": mask,
             "original_img": original_image, "original_mask": original_mask,
-            "vendor_label": self.vendor2label[c_vendor]
+            "vendor_label": self.vendor2label[c_vendor], "inestable_label": mask
         }
 
 

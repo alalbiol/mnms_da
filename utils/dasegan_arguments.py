@@ -26,6 +26,8 @@ parser.add_argument('--batch_size', type=int, default=64, help='Batch Size for t
 
 parser.add_argument('--dataset', type=str, help='Which dataset use')
 
+parser.add_argument('--use_original_mask', action='store_true', help='Whether use original mask labels when available')
+
 parser.add_argument('--data_augmentation', type=str, help='Apply data augmentations at train time')
 parser.add_argument('--img_size', type=int, default=224, help='Final img squared size')
 parser.add_argument('--crop_size', type=int, default=224, help='Center crop squared size')
@@ -58,6 +60,7 @@ parser.add_argument('--gen_checkpoint', type=str, default="", help='If there is 
 
 # Tasks weights
 parser.add_argument('--cycle_coef', type=float, default=0.5)
+parser.add_argument('--realfake_coef', type=float, default=0.0)
 
 parser.add_argument('--generated_samples', type=int, default=0, help='Generated samples to save each epoch')
 

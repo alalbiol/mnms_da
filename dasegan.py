@@ -10,6 +10,8 @@ from utils.datasets import dataset_selector
 from utils.neural import *
 from utils.gans import *
 
+import torch.nn.functional as F
+
 set_seed(args.seed)
 
 # Define Dataloaders
@@ -32,7 +34,7 @@ generator = define_Gen(
 )
 discriminator = define_Dis(
     input_nc=3, ndf=args.ndf, netD=args.dis_net, n_layers_D=3, norm=args.norm_layer, gpu_ids=args.gpu,
-    checkpoint=args.dis_checkpoint
+    checkpoint=args.dis_checkpoint, real_fake=(args.realfake_coef > 0)
 )
 segmentator = model_selector(
     "segmentation", args.seg_net, num_classes,
@@ -67,9 +69,11 @@ for epoch in range(args.epochs):
     epoch_gen_loss, epoch_dis_loss = [], []
 
     for batch_indx, batch in enumerate(vol_loader):
-        # step
-        step = epoch * len(vol_loader) + batch_indx + 1
+
         vol_x = batch["image"].cuda()
+        # Como utilizamos datos que no tienen porque estar etiquetados, recibimos una lista de labels
+        # donde puede haber o no (None). Ejemplo: [None, tensor, None, None]
+        inestable_label = batch["inestable_label"]
         vol_x_original_label = torch.from_numpy(np.array(batch["vendor_label"])).cuda()
         img_id = batch["img_id"]
 
@@ -84,7 +88,12 @@ for epoch in range(args.epochs):
         vol_u = generator(vol_x)
 
         pred_x = segmentator(vol_x)
+
         pred_u = segmentator(vol_u)
+        if args.use_original_mask:
+            for mask_index, mask in enumerate(inestable_label):
+                if mask is not None:
+                    pred_x[mask_index] = F.one_hot(mask.squeeze().to(torch.int64), 4).permute(2, 0, 1).cuda()
 
         # --- Identity/Cycle losses ---
 

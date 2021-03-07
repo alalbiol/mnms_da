@@ -1,5 +1,6 @@
 from .discriminator import *
 from .generators import *
+from .my_generators import *
 import models.gan.resnet as studio
 
 
@@ -9,7 +10,12 @@ def define_Gen(
 ):
     norm_layer = get_norm_layer(norm_type=norm)
 
-    if netG == 'resnet_9blocks':
+    if netG == 'my_resnet_9blocks':
+        gen_net = MyResnetGenerator(
+            input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, num_blocks=9, upsample=upsample
+        )
+
+    elif netG == 'resnet_9blocks':
         gen_net = ResnetGenerator(
             input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, num_blocks=9, upsample=upsample
         )
@@ -42,7 +48,7 @@ def define_Gen(
     return model
 
 
-def define_Dis(input_nc, ndf, netD, n_layers_D=3, norm='batch', gpu_ids=[0], checkpoint=""):
+def define_Dis(input_nc, ndf, netD, n_layers_D=3, norm='batch', gpu_ids=[0], checkpoint="", real_fake=False):
     norm_layer = get_norm_layer(norm_type=norm)
     if type(norm_layer) == functools.partial:
         use_bias = norm_layer.func == nn.InstanceNorm2d
@@ -50,7 +56,9 @@ def define_Dis(input_nc, ndf, netD, n_layers_D=3, norm='batch', gpu_ids=[0], che
         use_bias = norm_layer == nn.InstanceNorm2d
 
     if netD == 'n_layers':
-        dis_net = NLayerDiscriminator(input_nc, ndf, n_layers_D, norm_layer=norm_layer, use_bias=use_bias)
+        dis_net = NLayerDiscriminator(
+            input_nc, ndf, n_layers_D, norm_layer=norm_layer, use_bias=use_bias, real_fake=real_fake
+        )
     elif netD == 'pixel':
         dis_net = PixelDiscriminator(input_nc, ndf, norm_layer=norm_layer, use_bias=use_bias)
     else:

@@ -8,7 +8,7 @@ from models.gan.utils import *
 
 
 class NLayerDiscriminator(nn.Module):
-    def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=nn.BatchNorm2d, use_bias=False):
+    def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=nn.BatchNorm2d, use_bias=False, real_fake=False):
         super(NLayerDiscriminator, self).__init__()
         dis_model = [nn.Conv2d(input_nc, ndf, kernel_size=4, stride=2, padding=1),
                      nn.LeakyReLU(0.2, True)]
@@ -27,12 +27,21 @@ class NLayerDiscriminator(nn.Module):
             ndf * nf_mult_prev, ndf * nf_mult, kernel_size=4, stride=1,
             norm_layer=norm_layer, padding=1, bias=use_bias
         )]
-        dis_model += [nn.Conv2d(ndf * nf_mult, 1, kernel_size=4, stride=1, padding=1)]
 
         self.dis_model = nn.Sequential(*dis_model)
 
+        self.label_out = nn.Conv2d(ndf * nf_mult, 1, kernel_size=4, stride=1, padding=1)
+
+        self.real_fake = real_fake
+        if real_fake:
+            self.real_fake_out = nn.Conv2d(ndf * nf_mult, 1, kernel_size=4, stride=1, padding=1)
+
     def forward(self, x):
-        return self.dis_model(x)
+        x = self.dis_model(x)
+        res = self.label_out(x)
+        if self.real_fake:
+            res = [res, self.real_fake_out(x)]
+        return res
 
 
 class PixelDiscriminator(nn.Module):
