@@ -40,7 +40,9 @@ class NLayerDiscriminator(nn.Module):
         x = self.dis_model(x)
         res = self.label_out(x)
         if self.real_fake:
-            res = [res, self.real_fake_out(x)]
+            res = [self.real_fake_out(x), res]
+        else:
+            res = [None, res]
         return res
 
 

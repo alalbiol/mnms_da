@@ -99,16 +99,22 @@ for epoch in range(args.epochs):
 
         cycle_loss = L1(pred_x, pred_u) * args.cycle_coef
 
-        # --- Adversarial losses ---
-        vol_label_u = discriminator(vol_u)
+        # --- Adversarial losses: Vendor Label ---
+        vol_fake_label_u, vol_vendor_label_u = discriminator(vol_u)
 
         random_labels = get_random_labels(vol_x_original_label, AVAILABLE_LABELS)
-        random_labels = labels2rfield(random_labels, vol_label_u.shape).to(vol_label_u.device)
+        random_labels = labels2rfield(random_labels, vol_vendor_label_u.shape).to(vol_vendor_label_u.device)
 
-        label_loss_u = MSE(vol_label_u, random_labels)
+        vendor_label_loss_u = MSE(vol_vendor_label_u, random_labels)
+
+        # --- Adversarial losses: Real/Fake Label ---
+        fake_label_loss_u = 0
+        if args.realfake_coef > 0:
+            target_real = torch.ones_like(vol_fake_label_u).cuda()
+            fake_label_loss_u = MSE(vol_fake_label_u, target_real) * args.realfake_coef
 
         # --- Total generators losses ---
-        gen_loss = cycle_loss + label_loss_u
+        gen_loss = cycle_loss + vendor_label_loss_u + fake_label_loss_u
         epoch_gen_loss.append(gen_loss.item())
 
         #  --- Update generators ---
@@ -123,14 +129,26 @@ for epoch in range(args.epochs):
         d_optimizer.zero_grad()
 
         # --- Forward pass through discriminators ---
-        vol_label_x = discriminator(vol_x)
+        vol_real_label_x, vol_label_x = discriminator(vol_x)
+        vol_fake_label_u, vol_label_u = discriminator(vol_u.detach())
 
         # --- Discriminator losses ---
         vol_x_original_label = labels2rfield(vol_x_original_label, vol_label_x.shape).to(vol_label_x.device)
         vol_x_label_dis_loss = MSE(vol_label_x, vol_x_original_label)
 
+        # -- Real/Fake Label --
+        real_fake_loss = 0
+        if args.realfake_coef > 0:
+            target_real = torch.ones_like(vol_real_label_x).cuda()
+            real_loss_x = MSE(vol_real_label_x, target_real)
+
+            target_fake = torch.zeros_like(vol_fake_label_u).cuda()
+            fake_loss_u = MSE(vol_fake_label_u, target_fake)
+
+            real_fake_loss = (real_loss_x + fake_loss_u) * 0.5
+
         # Total discriminators losses
-        dis_loss = vol_x_label_dis_loss
+        dis_loss = vol_x_label_dis_loss + real_fake_loss
         epoch_dis_loss.append(dis_loss.item())
 
         # --- Update discriminators ---

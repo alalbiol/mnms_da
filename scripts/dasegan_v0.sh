@@ -62,6 +62,7 @@ mask_reshape_method="padd"
 generated_samples=25
 
 #cycle_coef=0.5
+realfake_coef=0.0
 for cycle_coef in 0.5 1.0
 do
 
@@ -76,8 +77,9 @@ python3 -u dasegan.py --gpu $gpu --seed $seed  --output_dir "$output_dir" \
 --seg_net $seg_net --dis_net $dis_net --gen_net $gen_net --gen_upsample $gen_upsample \
 --norm_layer $norm_layer --ngf $ngf --ndf $ndf \
 --seg_checkpoint "$seg_checkpoint" --dis_checkpoint "$dis_checkpoint" --gen_checkpoint "$gen_checkpoint" \
---cycle_coef $cycle_coef \
---generated_samples $generated_samples
+--cycle_coef $cycle_coef --realfake_coef $realfake_coef \
+--generated_samples $generated_samples \
+--no_dropout --use_original_mask
 
 done
 
