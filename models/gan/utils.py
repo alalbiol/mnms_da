@@ -51,6 +51,13 @@ def conv_norm_lrelu(in_dim, out_dim, kernel_size, stride=1, padding=0,
         norm_layer(out_dim), nn.LeakyReLU(0.2, True))
 
 
+def conv_spectral_lrelu(in_dim, out_dim, kernel_size, stride=1, padding=0, bias=False):
+    return nn.Sequential(
+        nn.utils.spectral_norm(nn.Conv2d(in_dim, out_dim, kernel_size, stride, padding, bias=bias), eps=1e-6),
+        nn.LeakyReLU(0.1, True)
+    )
+
+
 def conv_norm_relu(in_dim, out_dim, kernel_size, stride=1, padding=0,
                    norm_layer=nn.BatchNorm2d, bias=False):
     return nn.Sequential(
@@ -73,4 +80,3 @@ def dconv_norm_relu(in_dim, out_dim, kernel_size, stride=1, padding=0, output_pa
         )
     else:
         assert False, f"Please specify a correct upsample. Unknown upsample '{upsample}'"
-

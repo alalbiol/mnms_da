@@ -59,6 +59,10 @@ def define_Dis(input_nc, ndf, netD, n_layers_D=3, norm='batch', gpu_ids=[0], che
         dis_net = NLayerDiscriminator(
             input_nc, ndf, n_layers_D, norm_layer=norm_layer, use_bias=use_bias, real_fake=real_fake
         )
+    elif netD == 'n_layers_spectral':
+        dis_net = NLayerDiscriminatorSpectral(
+            input_nc, ndf, n_layers_D, use_bias=use_bias, real_fake=real_fake
+        )
     elif netD == 'pixel':
         dis_net = PixelDiscriminator(input_nc, ndf, norm_layer=norm_layer, use_bias=use_bias)
     else:

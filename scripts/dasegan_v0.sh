@@ -31,11 +31,12 @@ dataset="mms2d_full_unlabeled_ncl"
 seed=42
 
 seg_net="resnet18_unet_scratch"
-dis_net="n_layers"
-gen_net="resnet_9blocks"
+gen_net="my_resnet_9blocks"
+dis_net="n_layers_spectral"
 gen_upsample="interpolation"
 
-norm_layer="instance"
+gen_norm_layer="instance" # instance - batch
+dis_norm_layer="instance" # instance - batch
 
 ngf=64
 ndf=64
@@ -75,7 +76,7 @@ python3 -u dasegan.py --gpu $gpu --seed $seed  --output_dir "$output_dir" \
 --data_augmentation $data_augmentation --img_size $img_size --crop_size $crop_size --normalization $normalization \
 --add_depth --mask_reshape_method $mask_reshape_method \
 --seg_net $seg_net --dis_net $dis_net --gen_net $gen_net --gen_upsample $gen_upsample \
---norm_layer $norm_layer --ngf $ngf --ndf $ndf \
+--gen_norm_layer $gen_norm_layer --dis_norm_layer $dis_norm_layer --ngf $ngf --ndf $ndf \
 --seg_checkpoint "$seg_checkpoint" --dis_checkpoint "$dis_checkpoint" --gen_checkpoint "$gen_checkpoint" \
 --cycle_coef $cycle_coef --realfake_coef $realfake_coef \
 --generated_samples $generated_samples \

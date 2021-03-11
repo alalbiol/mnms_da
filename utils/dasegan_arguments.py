@@ -45,7 +45,8 @@ parser.add_argument('--seg_net', type=str, default='simple_unet', help='Model na
 parser.add_argument('--dis_net', type=str, default='n_layers', help='Model name for Discriminator')
 parser.add_argument('--gen_net', type=str, default='resnet_9blocks', help='Model name for Generator')
 
-parser.add_argument('--norm_layer', type=str, default='instance', help='instance normalization or batch normalization')
+parser.add_argument('--gen_norm_layer', type=str, default='instance', help='Generator normalization layer type')
+parser.add_argument('--dis_norm_layer', type=str, default='instance', help='Discriminator normalization layer type')
 parser.add_argument(
     '--gen_upsample', type=str, default="interpolation", help='How to perform upsample steps in generator architecture',
     choices=['interpolation', 'deconvolution']

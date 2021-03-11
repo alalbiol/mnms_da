@@ -29,11 +29,11 @@ print(f"Number of vendors: {AVAILABLE_LABELS}")
 # Define the networks
 #####################################################
 generator = define_Gen(
-    input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm_layer,
+    input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.gen_norm_layer,
     use_dropout=not args.no_dropout, gpu_ids=args.gpu, checkpoint=args.gen_checkpoint
 )
 discriminator = define_Dis(
-    input_nc=3, ndf=args.ndf, netD=args.dis_net, n_layers_D=3, norm=args.norm_layer, gpu_ids=args.gpu,
+    input_nc=3, ndf=args.ndf, netD=args.dis_net, n_layers_D=3, norm=args.dis_norm_layer, gpu_ids=args.gpu,
     checkpoint=args.dis_checkpoint, real_fake=(args.realfake_coef > 0)
 )
 segmentator = model_selector(
