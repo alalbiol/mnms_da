@@ -140,7 +140,8 @@ for epoch in range(args.epochs):
 
         # --- Discriminator losses ---
         vol_x_original_label = labels2rfield(vol_x_original_label, vol_label_x.shape).to(vol_label_x.device)
-        vol_x_label_dis_loss = MSE(vol_label_x, vol_x_original_label)
+        vol_x_label_dis_loss = MSE(vol_label_x, vol_x_original_label) * 0.5
+        vol_u_label_dis_loss = MSE(vol_label_u, vol_x_original_label) * args.dis_u_coef
 
         # -- Real/Fake Label --
         real_fake_loss = 0
@@ -151,7 +152,7 @@ for epoch in range(args.epochs):
             target_fake = torch.zeros_like(vol_fake_label_u).cuda()
             fake_loss_u = MSE(vol_fake_label_u, target_fake)
 
-            real_fake_loss = (real_loss_x + fake_loss_u) * 0.5
+            real_fake_loss = (real_loss_x + fake_loss_u) * args.realfake_coef
 
         # Total discriminators losses
         dis_loss = vol_x_label_dis_loss + real_fake_loss
@@ -194,18 +195,23 @@ for epoch in range(args.epochs):
                 vol_u_iou.append(evaluate_segmentation(pred_u.detach()[mask_index], mask.squeeze()))
 
         # --- Plot examples ---
-        if args.generated_samples > 0:
-            for indx in range(len(vol_x)):
-                if current_generated_samples < args.generated_samples:
-                    c_pred_x = convert_multiclass_mask(pred_x[indx].unsqueeze(0)).data.cpu().numpy().squeeze()
-                    c_pred_u = convert_multiclass_mask(pred_u[indx].unsqueeze(0)).data.cpu().numpy().squeeze()
-                    plot_save_generated(
-                        vol_x[indx].data.cpu().numpy()[0], vol_u[indx].data.cpu().numpy()[0], c_pred_x, c_pred_u,
-                        os.path.join(args.output_dir, "generated_samples", f"epoch_{epoch}"), img_id[indx]
-                    )
-                    current_generated_samples += 1
-                else:
-                    break
+        if args.generated_samples > 0 and (current_generated_samples < args.generated_samples):
+
+            for mask_index, mask in enumerate(inestable_label):
+                if mask is not None:
+
+                    if current_generated_samples < args.generated_samples:
+                        c_pred_x = convert_multiclass_mask(pred_x[mask_index].unsqueeze(0)).data.cpu().numpy().squeeze()
+                        c_pred_u = convert_multiclass_mask(pred_u[mask_index].unsqueeze(0)).data.cpu().numpy().squeeze()
+                        plot_save_generated(
+                            vol_x[mask_index].data.cpu().numpy()[0], mask.squeeze(), c_pred_x,
+                            vol_u[mask_index].data.cpu().numpy()[0], c_pred_u,
+                            os.path.join(args.output_dir, "generated_samples", f"epoch_{epoch}"), img_id[mask_index]
+                        )
+                        current_generated_samples += 1
+
+                    else:
+                        break
 
     vol_x_vendor_acc, vol_u_vendor_acc = np.array(vol_x_vendor_acc).mean(), np.array(vol_u_vendor_acc).mean()
     dis_metrics = f"X Vendor Acc: {vol_x_vendor_acc} | U Vendor Acc: {vol_u_vendor_acc}"

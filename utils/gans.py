@@ -61,16 +61,21 @@ def labels2rfield(labels, shape):
     return labels
 
 
-def plot_save_generated(original_img, generated_img, original_img_mask, generated_img_mask, save_dir, img_id):
+def plot_save_generated(
+        original_img, original_img_mask, original_img_pred_mask, generated_img, generated_img_mask,
+        save_dir, img_id
+):
 
     os.makedirs(save_dir, exist_ok=True)
-    fig, (ax1, ax2) = plt.subplots(2, 2, figsize=(14, 6))
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 2, figsize=(14, 6))
     plt.subplots_adjust(wspace=0.005, hspace=0.2, right=0.5)
 
     ax1[0].axis('off')
     ax1[1].axis('off')
     ax2[0].axis('off')
     ax2[1].axis('off')
+    ax3[0].axis('off')
+    ax3[1].axis('off')
 
     ax1[0].imshow(original_img, cmap="gray")
     ax1[0].set_title("Original Image")
@@ -83,6 +88,12 @@ def plot_save_generated(original_img, generated_img, original_img_mask, generate
 
     ax2[1].imshow(generated_img_mask, cmap="gray")
     ax2[1].set_title("Generated - Mask")
+
+    ax3[0].imshow(original_img, cmap="gray")
+    ax3[0].set_title("Original Image")
+
+    ax3[1].imshow(original_img_pred_mask, cmap="gray")
+    ax3[1].set_title("Predicted - Mask")
 
     pred_filename = os.path.join(
         save_dir,

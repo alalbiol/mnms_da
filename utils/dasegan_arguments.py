@@ -62,6 +62,7 @@ parser.add_argument('--gen_checkpoint', type=str, default="", help='If there is 
 # Tasks weights
 parser.add_argument('--cycle_coef', type=float, default=0.5)
 parser.add_argument('--realfake_coef', type=float, default=0.0)
+parser.add_argument('--dis_u_coef', type=float, default=0.0)
 
 parser.add_argument('--generated_samples', type=int, default=0, help='Generated samples to save each epoch')
 
