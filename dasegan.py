@@ -59,6 +59,7 @@ d_lr_scheduler = torch.optim.lr_scheduler.LambdaLR(
 )
 
 print("\n\n --- START TRAINING --\n")
+segmentator.eval()
 set_grad([segmentator], False)
 
 for epoch in range(args.epochs):
@@ -67,6 +68,9 @@ for epoch in range(args.epochs):
     lr = g_optimizer.param_groups[0]['lr']
 
     epoch_gen_loss, epoch_dis_loss = [], []
+    vol_x_vendor_acc, vol_u_vendor_acc = [], []
+    vol_x_realfake_acc, vol_u_realfake_acc = [], []
+    vol_x_iou, vol_u_iou = [], []
 
     for batch_indx, batch in enumerate(vol_loader):
 
@@ -76,6 +80,9 @@ for epoch in range(args.epochs):
         inestable_label = batch["inestable_label"]
         vol_x_original_label = torch.from_numpy(np.array(batch["vendor_label"])).cuda()
         img_id = batch["img_id"]
+
+        generator.train()
+        discriminator.train()
 
         #####################################################
         # -------------- Generator Computations -------------
@@ -96,7 +103,6 @@ for epoch in range(args.epochs):
                     pred_x[mask_index] = F.one_hot(mask.squeeze().to(torch.int64), 4).permute(2, 0, 1).cuda()
 
         # --- Identity/Cycle losses ---
-
         cycle_loss = L1(pred_x, pred_u) * args.cycle_coef
 
         # --- Adversarial losses: Vendor Label ---
@@ -155,6 +161,39 @@ for epoch in range(args.epochs):
         dis_loss.backward()
         d_optimizer.step()
 
+        #####################################################
+        # ---------------- EVALUATION METRICS ---------------
+        #####################################################
+
+        set_grad([discriminator], False)
+        discriminator.eval()
+
+        # --- Discriminator metrics ---
+        vol_real_label_x, vol_label_x = discriminator(vol_x)
+        vol_fake_label_u, vol_label_u = discriminator(vol_u.detach())
+
+        _, vol_label_x = torch.max(vol_label_x.data, 1)
+        _, vol_label_u = torch.max(vol_label_u.data, 1)
+        label_size = np.prod(list(vol_x_original_label.shape))
+        vol_x_vendor_acc.append(torch.sum(vol_label_x == vol_x_original_label.squeeze()) / label_size)
+        vol_u_vendor_acc.append(torch.sum(vol_label_u == vol_x_original_label.squeeze()) / label_size)
+
+        if args.realfake_coef > 0:
+            vol_x_realfake_acc.append(
+                torch.sum((vol_real_label_x > 0.5) == torch.ones_like(vol_real_label_x).cuda()) / label_size
+            )
+            vol_u_realfake_acc.append(
+                torch.sum((vol_fake_label_u > 0.5) == torch.zeros_like(vol_real_label_x).cuda()) / label_size
+            )
+
+        # --- Segmentator metrics ---
+        pred_x = segmentator(vol_x)
+        for mask_index, mask in enumerate(inestable_label):
+            if mask is not None:
+                vol_x_iou.append(evaluate_segmentation(pred_x.detach()[mask_index], mask.squeeze()))
+                vol_u_iou.append(evaluate_segmentation(pred_u.detach()[mask_index], mask.squeeze()))
+
+        # --- Plot examples ---
         if args.generated_samples > 0:
             for indx in range(len(vol_x)):
                 if current_generated_samples < args.generated_samples:
@@ -168,8 +207,20 @@ for epoch in range(args.epochs):
                 else:
                     break
 
+    vol_x_vendor_acc, vol_u_vendor_acc = np.array(vol_x_vendor_acc).mean(), np.array(vol_u_vendor_acc).mean()
+    dis_metrics = f"X Vendor Acc: {vol_x_vendor_acc} | U Vendor Acc: {vol_u_vendor_acc}"
+    if args.realfake_coef > 0:
+        vol_x_realfake_acc = np.array(vol_x_realfake_acc).mean()
+        vol_u_realfake_acc = np.array(vol_u_realfake_acc).mean()
+        dis_metrics += f" | X RealFake Acc: {vol_x_realfake_acc} | U RealFake Acc: {vol_u_realfake_acc}"
+
+    seg_metrics = f" Vol X IOU: {np.array(vol_x_iou).mean()} | Vol U IOU: {np.array(vol_u_iou).mean()}"
+
     epoch_gen_loss, epoch_dis_loss = np.array(epoch_gen_loss).mean(), np.array(epoch_dis_loss).mean()
-    print(f"Epoch {epoch} | lr: {lr} | Gen Loss: {epoch_gen_loss} | Dis Loss: {epoch_dis_loss}")
+    print(
+        f"Epoch {epoch} | lr: {lr} | Gen Loss: {epoch_gen_loss} | Dis Loss: {epoch_dis_loss} "
+        f"| {dis_metrics} | {seg_metrics}"
+    )
 
     # ---- Checkpoint ----
     torch.save(

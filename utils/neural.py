@@ -4,8 +4,18 @@ from torch.optim.swa_utils import SWALR
 from utils.coral import coral_loss
 from utils.general import *
 from utils.losses import *
-from utils.metrics import MetricsAccumulator
+from utils.metrics import MetricsAccumulator, jaccard_coef
 from utils.radam import *
+
+
+def set_seed(seed):
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
 
 
 def defrost_model(model):
@@ -529,11 +539,36 @@ class LambdaLR:
         return 1.0 - max(0, epoch + self.offset - self.decay_epoch) / (self.epochs - self.decay_epoch)
 
 
-def set_seed(seed):
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    np.random.seed(seed)
-    random.seed(seed)
+def evaluate_segmentation(prediction, target, mask_reshape_method="padd", include_background=False, num_classes=4):
+    """
+    target should be (h, w) with class indices
+    """
+
+    if not include_background and num_classes == 1:  # Single class -> sigmoid
+        pred_mask = reshape_masks(
+            torch.sigmoid(prediction).squeeze(0).data.cpu().numpy(),
+            target.shape, mask_reshape_method
+        )
+        pred_mask = np.where(pred_mask > 0.5, 1, 0).astype(np.int32)
+    else:
+        pred_mask = convert_multiclass_mask(prediction.unsqueeze(0)).data.cpu().numpy()
+        pred_mask = reshape_masks(pred_mask.squeeze(0), target.shape, mask_reshape_method)
+        pred_mask = pred_mask.astype(np.uint8)
+
+    iou = []
+
+    for current_class in np.unique(np.concatenate((target, pred_mask))):
+
+        if current_class > num_classes:
+            assert False, f"Label index '{current_class}' greater than num classes '{num_classes}'. " \
+                          f"Please count background if include_background is True."
+
+        if not include_background and current_class == 0:
+            continue
+
+        y_true = np.where(target == current_class, 1, 0).astype(np.int32)
+        y_pred = np.where(pred_mask == current_class, 1, 0).astype(np.int32)
+
+        iou.append(jaccard_coef(y_true, y_pred))
+
+    return np.array(iou).mean()

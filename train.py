@@ -6,7 +6,8 @@ from models import model_selector
 from utils.arguments import *
 from utils.data_augmentation import data_augmentation_selector
 from utils.datasets import dataset_selector, coral_dataset_selector
-from utils.gans import define_Gen, set_grad
+from models.gan import define_Gen
+from utils.gans import set_grad
 from utils.logging import log_epoch, build_header
 from utils.neural import *
 
@@ -18,8 +19,9 @@ if args.coral and args.coral_vendors is None:
 train_aug, train_aug_img, val_aug = data_augmentation_selector(
     args.data_augmentation, args.img_size, args.crop_size, args.mask_reshape_method
 )
-train_loader, val_loader, num_classes, class_to_cat, include_background = dataset_selector(train_aug, train_aug_img,
-                                                                                           val_aug, args)
+train_loader, val_loader, num_classes, class_to_cat, include_background = dataset_selector(
+    train_aug, train_aug_img, val_aug, args
+)
 train_coral_loader = coral_dataset_selector(train_aug, train_aug_img, "Training", args) if args.coral else None
 val_coral_loader = coral_dataset_selector(val_aug, [], "Validation", args) if args.coral else None
 print(f"Number of classes: {num_classes}")

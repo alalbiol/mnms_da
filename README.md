@@ -53,5 +53,7 @@ classification loss and CORAL loss are roughly the same. It seems be a reasonabl
 choice as we want to have a feature representation that is both discriminative
 and also minimizes the distance between the source and target domains  
 
+https://discuss.pytorch.org/t/why-dont-we-put-models-in-train-or-eval-modes-in-dcgan-example/7422/8
+
 ### ToDo
 

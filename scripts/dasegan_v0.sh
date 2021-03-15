@@ -41,7 +41,7 @@ dis_norm_layer="instance" # instance - batch
 ngf=64
 ndf=64
 
-seg_checkpoint="checks/segmentator/model_resnet18_unet_scratch_last.pt"
+seg_checkpoint="checks/segmentator/tanh_seg/model_resnet18_unet_scratch_last.pt"
 dis_checkpoint=""
 gen_checkpoint=""
 
@@ -57,7 +57,7 @@ lr=0.0002
 
 data_augmentation="mms2d"
 
-normalization="standardize"
+normalization="negative1_positive1"
 mask_reshape_method="padd"
 
 generated_samples=25
