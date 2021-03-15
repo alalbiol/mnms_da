@@ -80,19 +80,19 @@ def plot_save_generated(
     ax1[0].imshow(original_img, cmap="gray")
     ax1[0].set_title("Original Image")
 
-    ax1[1].imshow(original_img_mask, cmap="gray")
+    ax1[1].imshow(original_img_mask, cmap="gray", vmin=0, vmax=3)
     ax1[1].set_title("Original - Mask")
 
     ax2[0].imshow(generated_img, cmap="gray")
     ax2[0].set_title("Generated Image")
 
-    ax2[1].imshow(generated_img_mask, cmap="gray")
+    ax2[1].imshow(generated_img_mask, cmap="gray", vmin=0, vmax=3)
     ax2[1].set_title("Generated - Mask")
 
     ax3[0].imshow(original_img, cmap="gray")
     ax3[0].set_title("Original Image")
 
-    ax3[1].imshow(original_img_pred_mask, cmap="gray")
+    ax3[1].imshow(original_img_pred_mask, cmap="gray", vmin=0, vmax=3)
     ax3[1].set_title("Predicted - Mask")
 
     pred_filename = os.path.join(
