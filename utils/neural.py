@@ -571,4 +571,6 @@ def evaluate_segmentation(prediction, target, mask_reshape_method="padd", includ
 
         iou.append(jaccard_coef(y_true, y_pred))
 
+    if not len(iou):
+        return 1
     return np.array(iou).mean()
