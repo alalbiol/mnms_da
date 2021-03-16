@@ -176,15 +176,15 @@ for epoch in range(args.epochs):
         _, vol_label_x = torch.max(vol_label_x.data, 1)
         _, vol_label_u = torch.max(vol_label_u.data, 1)
         label_size = np.prod(list(vol_x_original_label.shape))
-        vol_x_vendor_acc.append(torch.sum(vol_label_x == vol_x_original_label.squeeze()) / label_size)
-        vol_u_vendor_acc.append(torch.sum(vol_label_u == vol_x_original_label.squeeze()) / label_size)
+        vol_x_vendor_acc.append((torch.sum(vol_label_x == vol_x_original_label.squeeze()) / label_size).item())
+        vol_u_vendor_acc.append(((torch.sum(vol_label_u == vol_x_original_label.squeeze()) / label_size).item()))
 
         if args.realfake_coef > 0:
             vol_x_realfake_acc.append(
-                torch.sum((vol_real_label_x > 0.5) == torch.ones_like(vol_real_label_x).cuda()) / label_size
+                (torch.sum((vol_real_label_x > 0.5) == torch.ones_like(vol_real_label_x).cuda()) / label_size).item()
             )
             vol_u_realfake_acc.append(
-                torch.sum((vol_fake_label_u > 0.5) == torch.zeros_like(vol_real_label_x).cuda()) / label_size
+                (torch.sum((vol_fake_label_u > 0.5) == torch.zeros_like(vol_real_label_x).cuda()) / label_size).item()
             )
 
         # --- Segmentator metrics ---
@@ -212,6 +212,9 @@ for epoch in range(args.epochs):
 
                     else:
                         break
+
+        if args.generated_samples > 0 and (current_generated_samples >= args.generated_samples):
+            break
 
     vol_x_vendor_acc, vol_u_vendor_acc = np.array(vol_x_vendor_acc).mean(), np.array(vol_u_vendor_acc).mean()
     dis_metrics = f"X Vendor Acc: {vol_x_vendor_acc} | U Vendor Acc: {vol_u_vendor_acc}"
