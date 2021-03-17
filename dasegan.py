@@ -212,8 +212,6 @@ for epoch in range(args.epochs):
 
                     else:
                         break
-        if current_generated_samples == args.generated_samples:
-            break
 
     vol_x_vendor_acc, vol_u_vendor_acc = np.array(vol_x_vendor_acc).mean(), np.array(vol_u_vendor_acc).mean()
     dis_metrics = f"X Vendor Acc: {vol_x_vendor_acc:.4f} | U Vendor Acc: {vol_u_vendor_acc:.4f}"
