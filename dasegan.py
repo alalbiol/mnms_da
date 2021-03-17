@@ -155,7 +155,7 @@ for epoch in range(args.epochs):
             real_fake_loss = (real_loss_x + fake_loss_u) * args.realfake_coef
 
         # Total discriminators losses
-        dis_loss = vol_x_label_dis_loss + real_fake_loss
+        dis_loss = vol_x_label_dis_loss + vol_u_label_dis_loss + real_fake_loss
         epoch_dis_loss.append(dis_loss.item())
 
         # --- Update discriminators ---
@@ -212,19 +212,21 @@ for epoch in range(args.epochs):
 
                     else:
                         break
+        if current_generated_samples == args.generated_samples:
+            break
 
     vol_x_vendor_acc, vol_u_vendor_acc = np.array(vol_x_vendor_acc).mean(), np.array(vol_u_vendor_acc).mean()
-    dis_metrics = f"X Vendor Acc: {vol_x_vendor_acc} | U Vendor Acc: {vol_u_vendor_acc}"
+    dis_metrics = f"X Vendor Acc: {vol_x_vendor_acc:.4f} | U Vendor Acc: {vol_u_vendor_acc:.4f}"
     if args.realfake_coef > 0:
         vol_x_realfake_acc = np.array(vol_x_realfake_acc).mean()
         vol_u_realfake_acc = np.array(vol_u_realfake_acc).mean()
-        dis_metrics += f" | X RealFake Acc: {vol_x_realfake_acc} | U RealFake Acc: {vol_u_realfake_acc}"
+        dis_metrics += f" | X RealFake Acc: {vol_x_realfake_acc:.4f} | U RealFake Acc: {vol_u_realfake_acc:.4f}"
 
-    seg_metrics = f" Vol X IOU: {np.array(vol_x_iou).mean()} | Vol U IOU: {np.array(vol_u_iou).mean()}"
+    seg_metrics = f" Vol X IOU: {np.array(vol_x_iou).mean():.4f} | Vol U IOU: {np.array(vol_u_iou).mean():.4f}"
 
     epoch_gen_loss, epoch_dis_loss = np.array(epoch_gen_loss).mean(), np.array(epoch_dis_loss).mean()
     print(
-        f"Epoch {epoch} | lr: {lr} | Gen Loss: {epoch_gen_loss} | Dis Loss: {epoch_dis_loss} "
+        f"Epoch {epoch} | lr: {lr} | Gen Loss: {epoch_gen_loss:.4f} | Dis Loss: {epoch_dis_loss:.4f} "
         f"| {dis_metrics} | {seg_metrics}"
     )
 
