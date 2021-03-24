@@ -48,7 +48,7 @@ def define_Gen(
     return model
 
 
-def define_Dis(input_nc, ndf, netD, n_layers_D=3, norm='batch', gpu_ids=[0], checkpoint="", real_fake=False):
+def define_Dis(input_nc, ndf, netD, n_layers_D=3, norm='batch', gpu_ids=[0], checkpoint="", real_fake=False, num_classes=4):
     norm_layer = get_norm_layer(norm_type=norm)
     if type(norm_layer) == functools.partial:
         use_bias = norm_layer.func == nn.InstanceNorm2d
@@ -61,7 +61,7 @@ def define_Dis(input_nc, ndf, netD, n_layers_D=3, norm='batch', gpu_ids=[0], che
         )
     elif netD == 'n_layers_spectral':
         dis_net = NLayerDiscriminatorSpectral(
-            input_nc, ndf, n_layers_D, use_bias=use_bias, real_fake=real_fake
+            input_nc, ndf, n_layers_D, use_bias=use_bias, real_fake=real_fake, num_classes=num_classes
         )
     elif netD == 'pixel':
         dis_net = PixelDiscriminator(input_nc, ndf, norm_layer=norm_layer, use_bias=use_bias)

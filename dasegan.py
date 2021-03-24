@@ -34,7 +34,7 @@ generator = define_Gen(
 )
 discriminator = define_Dis(
     input_nc=3, ndf=args.ndf, netD=args.dis_net, n_layers_D=3, norm=args.dis_norm_layer, gpu_ids=args.gpu,
-    checkpoint=args.dis_checkpoint, real_fake=(args.realfake_coef > 0)
+    checkpoint=args.dis_checkpoint, real_fake=(args.realfake_coef > 0), num_classes=num_classes
 )
 segmentator = model_selector(
     "segmentation", args.seg_net, num_classes,
@@ -42,8 +42,8 @@ segmentator = model_selector(
 )
 
 # Define Loss criterion
-
-MSE = nn.MSELoss()
+dis_labels_criterion = get_loss(args.dis_labels_criterion)
+dis_realfake_criterion = get_loss(args.dis_realfake_criterion)
 L1 = nn.L1Loss()
 
 # Define Optimizers
@@ -111,13 +111,13 @@ for epoch in range(args.epochs):
         random_labels = get_random_labels(vol_x_original_label, AVAILABLE_LABELS)
         random_labels = labels2rfield(random_labels, vol_vendor_label_u.shape).to(vol_vendor_label_u.device)
 
-        vendor_label_loss_u = MSE(vol_vendor_label_u, random_labels)
+        vendor_label_loss_u = dis_labels_criterion(vol_vendor_label_u, random_labels)
 
         # --- Adversarial losses: Real/Fake Label ---
         fake_label_loss_u = 0
         if args.realfake_coef > 0:
             target_real = torch.ones_like(vol_fake_label_u).cuda()
-            fake_label_loss_u = MSE(vol_fake_label_u, target_real) * args.realfake_coef
+            fake_label_loss_u = dis_realfake_criterion(vol_fake_label_u, target_real) * args.realfake_coef
 
         # --- Total generators losses ---
         gen_loss = cycle_loss + vendor_label_loss_u + fake_label_loss_u
@@ -139,18 +139,18 @@ for epoch in range(args.epochs):
         vol_fake_label_u, vol_label_u = discriminator(vol_u.detach())
 
         # --- Discriminator losses ---
-        vol_x_original_label = labels2rfield(vol_x_original_label, vol_label_x.shape).to(vol_label_x.device)
-        vol_x_label_dis_loss = MSE(vol_label_x, vol_x_original_label) * 0.5
-        vol_u_label_dis_loss = MSE(vol_label_u, vol_x_original_label) * args.dis_u_coef
+        vol_x_original_label_rfield = labels2rfield(vol_x_original_label, vol_label_x.shape).to(vol_label_x.device)
+        vol_x_label_dis_loss = dis_labels_criterion(vol_label_x, vol_x_original_label_rfield) * 0.5
+        vol_u_label_dis_loss = dis_labels_criterion(vol_label_u, vol_x_original_label_rfield) * args.dis_u_coef
 
         # -- Real/Fake Label --
         real_fake_loss = 0
         if args.realfake_coef > 0:
             target_real = torch.ones_like(vol_real_label_x).cuda()
-            real_loss_x = MSE(vol_real_label_x, target_real)
+            real_loss_x = dis_realfake_criterion(vol_real_label_x, target_real)
 
             target_fake = torch.zeros_like(vol_fake_label_u).cuda()
-            fake_loss_u = MSE(vol_fake_label_u, target_fake)
+            fake_loss_u = dis_realfake_criterion(vol_fake_label_u, target_fake)
 
             real_fake_loss = (real_loss_x + fake_loss_u) * args.realfake_coef
 
@@ -173,11 +173,14 @@ for epoch in range(args.epochs):
         vol_real_label_x, vol_label_x = discriminator(vol_x)
         vol_fake_label_u, vol_label_u = discriminator(vol_u.detach())
 
-        _, vol_label_x = torch.max(vol_label_x.data, 1)
-        _, vol_label_u = torch.max(vol_label_u.data, 1)
-        label_size = np.prod(list(vol_x_original_label.shape))
-        vol_x_vendor_acc.append((torch.sum(vol_label_x == vol_x_original_label.squeeze()) / label_size).item())
-        vol_u_vendor_acc.append(((torch.sum(vol_label_u == vol_x_original_label.squeeze()) / label_size).item()))
+        vol_x_original_label_rfield = labels2rfield(vol_x_original_label, vol_label_x.shape).to(vol_label_x.device)
+
+        vol_label_x = map2multiclass(vol_label_x)
+        vol_label_u = map2multiclass(vol_label_u)
+
+        label_size = np.prod(list(vol_x_original_label_rfield.shape))
+        vol_x_vendor_acc.append((torch.sum(vol_label_x == vol_x_original_label_rfield.squeeze()) / label_size).item())
+        vol_u_vendor_acc.append(((torch.sum(vol_label_u == vol_x_original_label_rfield.squeeze()) / label_size).item()))
 
         if args.realfake_coef > 0:
             vol_x_realfake_acc.append(

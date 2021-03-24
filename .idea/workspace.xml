@@ -4,13 +4,17 @@
     <list default="true" id="e74aa284-0ca1-4a3d-b39d-f37e6389a162" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dasegan.py" beforeDir="false" afterPath="$PROJECT_DIR$/dasegan.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/gan/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/gan/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/gan/discriminator.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/gan/discriminator.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/Atr.jpg" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/Btr.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/dasegan_v0.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/dasegan_v0.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/dasegan_v0.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/dasegan_v1.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d_acdc172d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d_acdc172d.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d_coral.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d_coral.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/dasegan_arguments.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/dasegan_arguments.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/gans.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/gans.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/general.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/general.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/neural.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/neural.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -134,6 +138,17 @@
       <workItem from="1615464075703" duration="2349000" />
       <workItem from="1615794167767" duration="9770000" />
       <workItem from="1615809437454" duration="1142000" />
+      <workItem from="1615841352326" duration="741000" />
+      <workItem from="1615848792378" duration="151000" />
+      <workItem from="1615880291811" duration="1448000" />
+      <workItem from="1615894555518" duration="23000" />
+      <workItem from="1615997732302" duration="331000" />
+      <workItem from="1616014424767" duration="64000" />
+      <workItem from="1616015049089" duration="223000" />
+      <workItem from="1616228318239" duration="18000" />
+      <workItem from="1616249285126" duration="210000" />
+      <workItem from="1616579420447" duration="7889000" />
+      <workItem from="1616608246759" duration="1449000" />
     </task>
     <task id="LOCAL-00001" summary="fix">
       <created>1607432585436</created>
@@ -310,7 +325,42 @@
       <option name="project" value="LOCAL" />
       <updated>1615808309851</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="plot fix">
+      <created>1615848937263</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1615848937263</updated>
+    </task>
+    <task id="LOCAL-00027" summary="fix metrics calculation">
+      <created>1615880891127</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1615880891127</updated>
+    </task>
+    <task id="LOCAL-00028" summary="fix error">
+      <created>1615894571260</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1615894571260</updated>
+    </task>
+    <task id="LOCAL-00029" summary="fix dis u loss">
+      <created>1616014481176</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1616014481176</updated>
+    </task>
+    <task id="LOCAL-00030" summary="no break">
+      <created>1616015063440</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1616015063440</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -329,7 +379,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="clean" />
     <MESSAGE value="notify when finish" />
     <MESSAGE value="volume dataset, histogram matching data augmentation" />
     <MESSAGE value="covarianzas y logging loss" />
@@ -350,7 +399,12 @@
     <MESSAGE value="real fake option coef" />
     <MESSAGE value="spectral norm discriminator" />
     <MESSAGE value="added metrics dis and gen" />
-    <option name="LAST_COMMIT_MESSAGE" value="added metrics dis and gen" />
+    <MESSAGE value="plot fix" />
+    <MESSAGE value="fix metrics calculation" />
+    <MESSAGE value="fix error" />
+    <MESSAGE value="fix dis u loss" />
+    <MESSAGE value="no break" />
+    <option name="LAST_COMMIT_MESSAGE" value="no break" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -384,6 +438,6 @@
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/mnms_da$.coverage" NAME=" Coverage Results" MODIFIED="1615810336345" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/mnms_da$.coverage" NAME=" Coverage Results" MODIFIED="1616599571188" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>

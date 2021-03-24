@@ -27,6 +27,15 @@ def defrost_model(model):
     for param in model.parameters():  # Defrost model
         param.requires_grad = True
 
+def get_loss(loss_name):
+    if loss_name == "mse":
+        return nn.MSELoss()
+    if loss_name == "ce":
+        return nn.CrossEntropyLoss()
+    if loss_name == "bce":
+        return nn.BCEWithLogitsLoss()
+    assert False, f"Unknown loss '{loss_name}'"
+
 
 def check_defrost(model, defrosted, current_epoch, defrost_epoch):
     """

@@ -54,10 +54,11 @@ def get_random_labels(vol_x_original_label, available_labels):
 
 def labels2rfield(labels, shape):
     # vol_label_u has shape [batch, channels, receptive_field, receptive_field], to be able to multiply
-    # with random labels, we have to transform list labels shape [batch] to [batch, 1, 1, 1]
+    # with random labels, we have to transform list labels shape [batch] to [batch, 1, 1]
     # eg. labels -> [0,1,0,2,0]
-    labels = labels.unsqueeze(1).unsqueeze(1).unsqueeze(1)
-    labels = torch.ones(shape).to(labels.device) * labels
+    batch, channels, height, width = shape
+    labels = labels.unsqueeze(1).unsqueeze(1)
+    labels = torch.ones((batch, height, width), dtype=torch.long).to(labels.device) * labels
     return labels
 
 

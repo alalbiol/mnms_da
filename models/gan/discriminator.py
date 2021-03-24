@@ -48,7 +48,7 @@ class NLayerDiscriminator(nn.Module):
 
 
 class NLayerDiscriminatorSpectral(nn.Module):
-    def __init__(self, input_nc, ndf=64, n_layers=3, use_bias=False, real_fake=False):
+    def __init__(self, input_nc, ndf=64, n_layers=3, use_bias=False, real_fake=False, num_classes=4):
         super(NLayerDiscriminatorSpectral, self).__init__()
         dis_model = [
             nn.utils.spectral_norm(nn.Conv2d(input_nc, ndf, kernel_size=4, stride=2, padding=1)),
@@ -73,7 +73,7 @@ class NLayerDiscriminatorSpectral(nn.Module):
 
         self.dis_model = nn.Sequential(*dis_model)
 
-        self.label_out = nn.Conv2d(ndf * nf_mult, 1, kernel_size=4, stride=1, padding=1)
+        self.label_out = nn.Conv2d(ndf * nf_mult, num_classes, kernel_size=4, stride=1, padding=1)
 
         self.real_fake = real_fake
         if real_fake:

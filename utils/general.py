@@ -36,6 +36,15 @@ def convert_multiclass_mask(mask):
     return mask.max(1)[1]
 
 
+def map2multiclass(mask):
+    """
+    Transform multiclass mask [batch, num_classes, h, w] to [batch, h, w]
+    :param mask: Mask to transform
+    :return: Transformed multiclass mask
+    """
+    return mask.max(1)[1]
+
+
 def map_mask_classes(mask, classes_map):
     """
 
