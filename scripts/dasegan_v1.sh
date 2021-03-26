@@ -72,7 +72,7 @@ for cycle_coef in 0.5 1.0
 do
 
 model_dir="GENERATOR_${gen_net}_${gen_upsample}_DISCRIMINATOR_${dis_net}_SEGMENTATOR_${seg_net}"
-output_dir="resultsss/$dataset/DASEGAN/$model_dir"
+output_dir="results/$dataset/DASEGAN/$model_dir"
 output_dir="$output_dir/lr${lr}_cyclecoef${cycle_coef}_realfakecoef${realfake_coef}_disucoef${dis_u_coef}"
 output_dir="$output_dir/normalization_${normalization}/da${data_augmentation}/norm_layer_${norm_layer}"
 
