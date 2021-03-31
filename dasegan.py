@@ -22,7 +22,7 @@ train_aug, train_aug_img, val_aug = data_augmentation_selector(
 vol_loader, val_vols, num_classes, class_to_cat, include_background = dataset_selector(
     train_aug, train_aug_img, val_aug, args
 )
-print(f"Number of classes: {num_classes}")
+print(f"Number of segmentator classes: {num_classes}")
 AVAILABLE_LABELS = np.arange(0, vol_loader.dataset.num_vendors).tolist()
 print(f"Number of vendors: {AVAILABLE_LABELS}")
 
@@ -34,7 +34,7 @@ generator = define_Gen(
 )
 discriminator = define_Dis(
     input_nc=3, ndf=args.ndf, netD=args.dis_net, n_layers_D=3, norm=args.dis_norm_layer, gpu_ids=args.gpu,
-    checkpoint=args.dis_checkpoint, real_fake=(args.realfake_coef > 0), num_classes=num_classes
+    checkpoint=args.dis_checkpoint, real_fake=(args.realfake_coef > 0), num_classes=len(AVAILABLE_LABELS)
 )
 segmentator = model_selector(
     "segmentation", args.seg_net, num_classes,
