@@ -9,7 +9,7 @@ import os
 from utils.general import binarize_volume_prediction, plot_save_pred_volume
 
 
-def test_prediction(args, model=None):
+def test_prediction(args, model=None, generator=None):
 
     os.makedirs(os.path.join(args.output_dir, "test_predictions"), exist_ok=True)
     if args.generated_overlays > 0:
@@ -26,13 +26,13 @@ def test_prediction(args, model=None):
             in_channels=3 if args.add_depth else 1, devices=args.gpu, checkpoint=args.model_checkpoint
         )
 
-    generator = None
-    if args.gen_checkpoint != "":
-        print("Using Generator!")
-        generator = define_Gen(
-            input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm_layer,
-            use_dropout=not args.no_dropout, gpu_ids=args.gpu, checkpoint=args.gen_checkpoint
-        )
+    if generator is None:
+        if args.gen_checkpoint != "":
+            print("Using Generator!")
+            generator = define_Gen(
+                input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm_layer,
+                use_dropout=not args.no_dropout, gpu_ids=args.gpu, checkpoint=args.gen_checkpoint
+            )
 
     model.eval()
     with torch.no_grad():
