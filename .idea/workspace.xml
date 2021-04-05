@@ -2,18 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e74aa284-0ca1-4a3d-b39d-f37e6389a162" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/mnms_da.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/mnms_da.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dasegan.py" beforeDir="false" afterPath="$PROJECT_DIR$/dasegan.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/gan/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/gan/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/gan/discriminator.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/gan/discriminator.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/Atr.jpg" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/Btr.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/dasegan_v0.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/dasegan_v1.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/dasegan_v1.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/dasegan_v1.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d_acdc172d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d_acdc172d.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d_coral.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d_coral.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/dasegan_arguments.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/dasegan_arguments.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/datasets.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/gans.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/gans.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/general.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/general.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/neural.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/neural.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -148,7 +149,16 @@
       <workItem from="1616228318239" duration="18000" />
       <workItem from="1616249285126" duration="210000" />
       <workItem from="1616579420447" duration="7889000" />
-      <workItem from="1616608246759" duration="1449000" />
+      <workItem from="1616608246759" duration="1621000" />
+      <workItem from="1616739172050" duration="180000" />
+      <workItem from="1616739602553" duration="22000" />
+      <workItem from="1617111104434" duration="1347000" />
+      <workItem from="1617200084631" duration="1146000" />
+      <workItem from="1617302592212" duration="268000" />
+      <workItem from="1617356264182" duration="4165000" />
+      <workItem from="1617531549499" duration="3629000" />
+      <workItem from="1617604923587" duration="324000" />
+      <workItem from="1617614975607" duration="2766000" />
     </task>
     <task id="LOCAL-00001" summary="fix">
       <created>1607432585436</created>
@@ -360,7 +370,28 @@
       <option name="project" value="LOCAL" />
       <updated>1616015063440</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="multiple discriminator classes and dis losses aka v1">
+      <created>1616621255295</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1616621255295</updated>
+    </task>
+    <task id="LOCAL-00032" summary="fix typo">
+      <created>1616739617554</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1616739617554</updated>
+    </task>
+    <task id="LOCAL-00033" summary="fix number of classes">
+      <created>1617201208981</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1617201208981</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -379,9 +410,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="notify when finish" />
-    <MESSAGE value="volume dataset, histogram matching data augmentation" />
-    <MESSAGE value="covarianzas y logging loss" />
     <MESSAGE value="coral integration" />
     <MESSAGE value="tagged" />
     <MESSAGE value="more data partition options, coral improvements" />
@@ -404,40 +432,43 @@
     <MESSAGE value="fix error" />
     <MESSAGE value="fix dis u loss" />
     <MESSAGE value="no break" />
-    <option name="LAST_COMMIT_MESSAGE" value="no break" />
+    <MESSAGE value="multiple discriminator classes and dis losses aka v1" />
+    <MESSAGE value="fix typo" />
+    <MESSAGE value="fix number of classes" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix number of classes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/datasets.py</url>
-          <line>563</line>
+          <line>564</line>
           <option name="timeStamp" value="37" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/datasets.py</url>
-          <line>567</line>
+          <line>568</line>
           <option name="timeStamp" value="38" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/datasets.py</url>
-          <line>380</line>
+          <line>381</line>
           <option name="timeStamp" value="39" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/datasets.py</url>
-          <line>253</line>
+          <line>254</line>
           <option name="timeStamp" value="40" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/datasets.py</url>
-          <line>254</line>
+          <line>255</line>
           <option name="timeStamp" value="41" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/mnms_da$.coverage" NAME=" Coverage Results" MODIFIED="1616599571188" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/mnms_da$.coverage" NAME=" Coverage Results" MODIFIED="1617360011044" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>

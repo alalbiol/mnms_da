@@ -27,6 +27,7 @@ def defrost_model(model):
     for param in model.parameters():  # Defrost model
         param.requires_grad = True
 
+
 def get_loss(loss_name):
     if loss_name == "mse":
         return nn.MSELoss()
@@ -231,7 +232,9 @@ def create_checkpoint(metrics, model, model_name, output_dir):
         if metrics.metrics_helpers[f"{metric_key}_is_best"]:
             torch.save(model.state_dict(), output_dir + f"/model_{model_name}_best_{metric_key}.pt")
 
-    torch.save(model.state_dict(), output_dir + "/model_" + model_name + "_last.pt")
+    checkpoint_path = output_dir + "/model_" + model_name + "_last.pt"
+    torch.save(model.state_dict(), checkpoint_path)
+    return checkpoint_path
 
 
 def calculate_loss(y_true, y_pred, criterion, weights_criterion, multiclass_criterion, num_classes):
@@ -501,7 +504,7 @@ def finish_swa(
         num_classes, include_background, args
 ):
     if args.swa_start == -1:  # If swa was not used, do not perform nothing
-        return
+        return ""
 
     print("\nFinalizing SWA...")
     """
@@ -519,9 +522,10 @@ def finish_swa(
 
     swa_epochs = args.epochs - args.swa_start
 
+    checkpoint_path = f"model_{args.model_name}_{swa_epochs}epochs_swalr{args.swa_lr}.pt"
     torch.save(
         swa_model.state_dict(),
-        os.path.join(args.output_dir, f"model_{args.model_name}_{swa_epochs}epochs_swalr{args.swa_lr}.pt")
+        os.path.join(args.output_dir, checkpoint_path)
     )
 
     swa_metrics = MetricsAccumulator(
@@ -536,6 +540,7 @@ def finish_swa(
 
     print("SWA validation metrics")
     swa_metrics.report_best()
+    return checkpoint_path
 
 
 class LambdaLR:

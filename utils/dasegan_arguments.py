@@ -67,7 +67,7 @@ parser.add_argument('--cycle_coef', type=float, default=0.5)
 parser.add_argument('--realfake_coef', type=float, default=0.0)
 parser.add_argument('--dis_u_coef', type=float, default=0.0)
 
-parser.add_argument('--generated_samples', type=int, default=0, help='Generated samples to save each epoch')
+parser.add_argument('--plot_examples', action='store_true', help='Whether plot examples of transformed volumes')
 
 parser.add_argument('--patients_percentage', type=float, default=1, help='Train patients percentage (from 0 to 1)')
 parser.add_argument('--rand_histogram_matching', action='store_true', help='Apply random histogram matching')
@@ -82,10 +82,9 @@ if args.output_dir == "":
 for argument in args.__dict__:
     print("{}: {}".format(argument, args.__dict__[argument]))
 
-if not os.path.exists(args.output_dir):
-    os.makedirs(args.output_dir, exist_ok=True)
-    if args.generated_samples > 0:
-        os.makedirs(os.path.join(args.output_dir, "generated_samples"), exist_ok=True)
+os.makedirs(args.output_dir, exist_ok=True)
+if args.plot_examples:
+    os.makedirs(os.path.join(args.output_dir, "generated_samples"), exist_ok=True)
 
 # https://stackoverflow.com/a/55114771
 with open(os.path.join(args.output_dir, 'commandline_args.txt'), 'w') as f:

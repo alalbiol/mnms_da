@@ -12,6 +12,11 @@ from utils.gans import *
 
 import torch.nn.functional as F
 
+import os
+
+os.environ["WANDB_SILENT"] = "true"
+import wandb
+
 set_seed(args.seed)
 
 # Define Dataloaders
@@ -58,13 +63,22 @@ d_lr_scheduler = torch.optim.lr_scheduler.LambdaLR(
     d_optimizer, lr_lambda=LambdaLR(args.epochs, 0, args.decay_epoch).step
 )
 
+if args.plot_examples:
+    print("Generating samples to plot...")
+    vendors_samples = get_vendors_samples(args.normalization)
+
+
+wandb.init(project="DASEGAN", config=args)  # name="experiment1",
+
 print("\n\n --- START TRAINING --\n")
 segmentator.eval()
 set_grad([segmentator], False)
 
+# wandb.watch(generator)
+# wandb.watch(discriminator)
+
 for epoch in range(args.epochs):
 
-    current_generated_samples = 0
     lr = g_optimizer.param_groups[0]['lr']
 
     epoch_gen_loss, epoch_dis_loss = [], []
@@ -197,33 +211,38 @@ for epoch in range(args.epochs):
                 vol_x_iou.append(evaluate_segmentation(pred_x.detach()[mask_index], mask.squeeze()))
                 vol_u_iou.append(evaluate_segmentation(pred_u.detach()[mask_index], mask.squeeze()))
 
-        # --- Plot examples ---
-        if args.generated_samples > 0 and (current_generated_samples < args.generated_samples):
+        break
 
-            for mask_index, mask in enumerate(inestable_label):
-                if mask is not None:
+    logging = {}
 
-                    if current_generated_samples < args.generated_samples:
-                        c_pred_x = convert_multiclass_mask(pred_x[mask_index].unsqueeze(0)).data.cpu().numpy().squeeze()
-                        c_pred_u = convert_multiclass_mask(pred_u[mask_index].unsqueeze(0)).data.cpu().numpy().squeeze()
-                        plot_save_generated(
-                            vol_x[mask_index].data.cpu().numpy()[0], mask.squeeze(), c_pred_x,
-                            vol_u[mask_index].data.cpu().numpy()[0], c_pred_u,
-                            os.path.join(args.output_dir, "generated_samples", f"epoch_{epoch}"), img_id[mask_index]
-                        )
-                        current_generated_samples += 1
-
-                    else:
-                        break
+    # --- Plot examples ---
+    if args.plot_examples:
+        vendors_transformed_samples = []
+        with torch.no_grad():
+            for vendor_samples in vendors_samples:
+                vendors_transformed_samples.append(
+                    generator(vendor_samples).data.cpu().numpy()[:, 0, ...]
+                )
+        generated_samples = plot_save_generated_vendor_list(
+            vendors_transformed_samples, os.path.join(args.output_dir, "generated_samples", f"epoch_{epoch}.jpeg")
+        )
+        logging["Generated Examples"] = generated_samples
 
     vol_x_vendor_acc, vol_u_vendor_acc = np.array(vol_x_vendor_acc).mean(), np.array(vol_u_vendor_acc).mean()
     dis_metrics = f"X Vendor Acc: {vol_x_vendor_acc:.4f} | U Vendor Acc: {vol_u_vendor_acc:.4f}"
+    logging["Vendor X Acc"] = vol_x_vendor_acc
+    logging["Vendor U Acc"] = vol_u_vendor_acc
+
     if args.realfake_coef > 0:
         vol_x_realfake_acc = np.array(vol_x_realfake_acc).mean()
         vol_u_realfake_acc = np.array(vol_u_realfake_acc).mean()
         dis_metrics += f" | X RealFake Acc: {vol_x_realfake_acc:.4f} | U RealFake Acc: {vol_u_realfake_acc:.4f}"
+        logging["RealFake X Acc"] = vol_x_realfake_acc
+        logging["RealFake U Acc"] = vol_u_realfake_acc
 
     seg_metrics = f" Vol X IOU: {np.array(vol_x_iou).mean():.4f} | Vol U IOU: {np.array(vol_u_iou).mean():.4f}"
+    logging["Vol X IOU"] = np.array(vol_x_iou).mean()
+    logging["Vol U IOU"] = np.array(vol_u_iou).mean()
 
     epoch_gen_loss, epoch_dis_loss = np.array(epoch_gen_loss).mean(), np.array(epoch_dis_loss).mean()
     print(
@@ -231,19 +250,28 @@ for epoch in range(args.epochs):
         f"| {dis_metrics} | {seg_metrics}"
     )
 
+    logging["Generator Loss"] = epoch_gen_loss
+    logging["Discriminator Loss"] = epoch_dis_loss
+    logging["Learning Rate"] = lr
+
     # ---- Checkpoint ----
     torch.save(
         {
             'epoch': epoch + 1,
+            # 'segmentator': segmentator.state_dict(),
             'discriminator': discriminator.state_dict(),
-            'segmentator': segmentator.state_dict(),
             'generator': generator.state_dict(),
             'd_optimizer': d_optimizer.state_dict(),
             'g_optimizer': g_optimizer.state_dict()
         },
-        f'{args.output_dir}/checkpoint_epoch{epoch + 1}.pt'
+        f'{args.output_dir}/checkpoint.pt'
     )
+
+    wandb.log(logging)
+    wandb.save(f'{args.output_dir}/checkpoint.pt')
 
     # -- Update learning rates --
     g_lr_scheduler.step()
     d_lr_scheduler.step()
+
+wandb.finish()

@@ -2,8 +2,11 @@ import os
 import matplotlib.pyplot as plt
 import copy
 import numpy as np
+import matplotlib.gridspec as gridspec
 
 import torch
+
+from utils.datasets import get_mnms_arrays
 
 
 def set_grad(nets, requires_grad=False):
@@ -104,6 +107,57 @@ def plot_save_generated(
     plt.close()
 
 
+def plot_save_generated_vendor_list(
+        transformed_samples, pred_path, rows=10, cols=4
+):
+    a_transformed, b_transformed, c_transformed, d_transformed = transformed_samples
+    fig = plt.figure(figsize=(cols + 1, rows + 1))
+
+    gs1 = gridspec.GridSpec(rows, cols, )
+    gs1.update(wspace=0.02, hspace=0.05)  # set the spacing between axes.
+    set_title = {"A": True, "B": True, "C": True, "D": True}
+
+    curr_vendor = 0  # 0 -> A, 1 -> B, 2 -> C, 3 -> D
+    for i in range(rows*cols):
+        # i = i + 1 # grid spec indexes from 0
+        ax = plt.subplot(gs1[i])
+        ax.set_axis_off()
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+        ax.set_aspect('auto')
+
+        if curr_vendor == 0:
+            if set_title["A"]:
+                ax.set_title("Vendor A")
+                set_title["A"] = False
+            img = a_transformed[i]
+        elif curr_vendor == 1:
+            if set_title["B"]:
+                ax.set_title("Vendor B")
+                set_title["B"] = False
+            img = b_transformed[i]
+        elif curr_vendor == 2:
+            if set_title["C"]:
+                ax.set_title("Vendor C")
+                set_title["C"] = False
+            img = c_transformed[i]
+        elif curr_vendor == 3:
+            if set_title["D"]:
+                ax.set_title("Vendor D")
+                set_title["D"] = False
+            img = d_transformed[i]
+        else:
+            assert False, "Unknown plotting error. Current vendor > 3?!"
+        ax.imshow(img, cmap="gray")
+
+        curr_vendor += 1
+        curr_vendor = curr_vendor if curr_vendor <= 3 else 0
+
+    fig.savefig(pred_path, dpi=200, bbox_inches='tight')
+    plt.close()
+    return fig
+
+
 def plot_save_kernels(kernel, save_dir,  path_info="", by_kernel=True):
     """
     kernel with shape: (batch, channels, height, width)
@@ -150,3 +204,32 @@ def plot_save_kernels(kernel, save_dir,  path_info="", by_kernel=True):
             )
             plt.savefig(pred_filename, dpi=200, bbox_inches='tight')
             plt.close()
+
+
+def get_vendors_samples(normalization):
+    rows, cols = 10, 4
+    num_test_samples = rows * cols
+
+    img_list_a = get_mnms_arrays(
+        "A", normalization=normalization, add_depth=True,
+    )
+    img_list_b = get_mnms_arrays(
+        "B", normalization=normalization, add_depth=True
+    )
+    img_list_c = get_mnms_arrays(
+        "C", normalization=normalization, data_mod="_unlabeled", add_depth=True
+    )
+    img_list_d = get_mnms_arrays(
+        "D", normalization=normalization, data_mod="_unlabeled_full", partition="Testing", add_depth=True
+    )
+
+    np.random.seed(42)
+    img_list_a_selection = img_list_a[np.random.choice(len(img_list_a), num_test_samples, replace=False)]
+    np.random.seed(42)
+    img_list_b_selection = img_list_b[np.random.choice(len(img_list_b), num_test_samples, replace=False)]
+    np.random.seed(42)
+    img_list_c_selection = img_list_c[np.random.choice(len(img_list_c), num_test_samples, replace=False)]
+    np.random.seed(42)
+    img_list_d_selection = img_list_d[np.random.choice(len(img_list_d), num_test_samples, replace=False)]
+
+    return [img_list_a_selection, img_list_b_selection, img_list_c_selection, img_list_d_selection]

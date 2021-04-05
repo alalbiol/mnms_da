@@ -11,6 +11,7 @@ from skimage.exposure import match_histograms
 
 import utils.dataload as data_utils
 from tools.metrics_mnms import load_nii
+from utils.data_augmentation import data_augmentation_selector
 from utils.general import map_mask_classes
 
 
@@ -808,3 +809,42 @@ def dataset_selector(train_aug, train_aug_img, val_aug, args, is_test=False):
     print(f"Train dataset len:  {len(train_dataset)}")
     print(f"Validation dataset len:  {len(val_dataset)}")
     return train_loader, val_loader, num_classes, class_to_cat, include_background
+
+
+def get_mnms_arrays(
+    vendor, normalization, partition="Training", data_mod="", verbose=False,
+    add_depth=False, batch_size=100, img_size=256, crop_size=256
+):
+    """
+    Return tensors torch.Size([batch, channels, img_size, crop_size])
+    """
+
+    data_augmentation = "none"
+    mask_reshape_method = "padd"
+    train_aug, train_aug_img, val_aug = data_augmentation_selector(
+        data_augmentation, img_size, crop_size, mask_reshape_method, verbose=verbose
+    )
+
+    dataset = f"mms_vendor{vendor}{data_mod}"
+
+    only_end = False if "full" in dataset else True
+    unlabeled = True if "unlabeled" in dataset else False
+    c_centre = find_values(dataset, "centre", int)
+    c_vendor = find_values(dataset, "vendor", str)
+
+    train_dataset = MMs2DDataset(
+        partition=partition, transform=train_aug, img_transform=train_aug_img,
+        normalization=normalization, add_depth=add_depth,
+        is_labeled=(not unlabeled), centre=c_centre, vendor=c_vendor,
+        end_volumes=only_end,
+    )
+
+    train_loader = DataLoader(
+        train_dataset, batch_size=batch_size, pin_memory=True,
+        shuffle=False, collate_fn=train_dataset.custom_collate
+    )
+
+    if verbose:
+        print(f"Len train_dataset df: {len(train_dataset.data)}")
+
+    return next(iter(train_loader))["image"]
