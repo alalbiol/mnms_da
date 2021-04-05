@@ -224,7 +224,7 @@ for epoch in range(args.epochs):
                     generator(vendor_samples).data.cpu().numpy()[:, 0, ...]
                 )
         generated_samples = plot_save_generated_vendor_list(
-            vendors_transformed_samples, os.path.join(args.output_dir, "generated_samples", f"epoch_{epoch}.jpeg")
+            vendors_transformed_samples, os.path.join(args.output_dir, "generated_samples", f"epoch_{epoch}.jpg")
         )
         logging["Generated Examples"] = generated_samples
 
