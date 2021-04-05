@@ -68,7 +68,7 @@ if args.plot_examples:
     vendors_samples = get_vendors_samples(args.normalization)
 
 
-wandb.init(project="DASEGAN", config=args)  # name="experiment1",
+wandb.init(project="MnMs DASEGAN", config=args)  # name="experiment1",
 
 print("\n\n --- START TRAINING --\n")
 segmentator.eval()

@@ -1,20 +1,19 @@
 import os
 import re
 import glob
-import time
 import argparse
 import numpy as np
 import pandas as pd
 import nibabel as nib
 from medpy.metric.binary import hd, dc, jc, assd
-
-import matplotlib
-
-matplotlib.use("agg")
-import matplotlib.pyplot as plt
-import seaborn as sns
 import pretty_errors
 import time
+
+import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+matplotlib.use("agg")
 
 pretty_errors.mono()
 
@@ -370,7 +369,7 @@ def compute_metrics_on_directories(dir_gt, dir_pred, remove_preds):
     remove_preds: bool
     Whether remove predictions or not.
     """
-    print("Computing Directory Metrics...")
+    print("\nComputing Directory Metrics...")
     print(f"Ground truth dir: {dir_gt}")
     print(f"Preds dir: {dir_pred}")
     info = pd.read_csv(os.path.join("data/MMs", 'volume_info.csv'))
@@ -439,38 +438,6 @@ def compute_metrics_on_directories(dir_gt, dir_pred, remove_preds):
             os.remove(pred_path)
 
     return 1
-
-    aux = ['', ' std']
-    header_summary = [*HEADER[0], *np.asarray([[e, e + aux[i % 2]] for e, i in enumerate(HEADER)]).flatten()]
-
-    b = 4  # bias
-
-    def getRow(auxdf, name):
-        aux = [name]
-        for i in range(b, auxdf.shape[1]):
-            aux.append(auxdf.iloc[:, i].mean())
-            aux.append(auxdf.iloc[:, i].std())
-        aux = [aux]
-
-        return aux
-
-    summary = []
-    summary.append(getRow(df, 'Total'))
-    dfed = df[df['Name'].str.contains('_ED')]
-    summary.append(getRow(dfed, 'ED'))
-    dfes = df[df['Name'].str.contains('_ES')]
-    summary.append(getRow(dfes, 'ES'))
-    dfva = df[df['Vendor'] == 'A']
-    summary.append(getRow(dfva, 'Vendor A'))
-    dfvb = df[df['Vendor'] == 'B']
-    summary.append(getRow(dfvb, 'Vendor B'))
-    dfvc = df[df['Vendor'] == 'C']
-    summary.append(getRow(dfvc, 'Vendor C'))
-    dfvd = df[df['Vendor'] == 'D']
-    summary.append(getRow(dfvd, 'Vendor D'))
-
-    dfs = pd.DataFrame(summary, columns=header_summary)
-    dfs.to_csv(os.path.join(dir_pred, "results_summary_{}.csv".format(time.strftime("%Y%m%d_%H%M%S"))), index=False)
 
 
 def main(path_gt, path_pred, remove_preds):

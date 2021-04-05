@@ -3,13 +3,19 @@
 
 # ---- My utils ----
 from models import model_selector
+from tools.metrics_mnms import compute_metrics_on_directories
 from utils.arguments import *
 from utils.data_augmentation import data_augmentation_selector
 from utils.datasets import dataset_selector, coral_dataset_selector
 from models.gan import define_Gen
 from utils.gans import set_grad
 from utils.logging import log_epoch, build_header
+from utils.mnms import test_prediction
 from utils.neural import *
+import os
+
+os.environ["WANDB_SILENT"] = "true"
+import wandb
 
 set_seed(args.seed)
 
@@ -63,6 +69,8 @@ val_metrics = MetricsAccumulator(
 full_criterion = [args.criterion]
 full_criterion += ["coral"] if args.coral else ""
 
+wandb.init(project="MnMs Segmentation", config=args)  # name="experiment1",
+
 header, defrosted = build_header(class_to_cat, full_criterion, args.metrics, display=True), False
 for current_epoch in range(args.epochs):
 
@@ -81,14 +89,19 @@ for current_epoch in range(args.epochs):
     )
 
     # ToDo
-    if args.coral: val_metrics.add_losses("Coral_loss", 0.0000)
+    if args.coral:
+        val_metrics.add_losses("Coral_loss", 0.0000)
 
     current_lr = get_current_lr(optimizer)
     log_epoch((current_epoch + 1), current_lr, train_metrics, val_metrics, header)
+    logging = {"lr": current_lr}
+    for metric_name in args.metrics:
+        logging[f"Mean {metric_name}"] = train_metrics.mean_value(metric_name)
 
     val_metrics.save_progress(args.output_dir, identifier="validation_metrics")
     train_metrics.save_progress(args.output_dir, identifier="train_metrics")
 
+    checkpoint_path = ""
     if args.swa_start != -1 and (current_epoch + 1) >= args.swa_start:
         if not swa_model:
             print("\n------------------------------- START SWA -------------------------------\n")
@@ -98,13 +111,45 @@ for current_epoch in range(args.epochs):
             swa_scheduler.step()
     else:
         # Only save checkpoints when not applying SWA -> only want save last model using SWA
-        create_checkpoint(val_metrics, model, args.model_name, args.output_dir)
+        checkpoint_path = create_checkpoint(val_metrics, model, args.model_name, args.output_dir)
         scheduler_step(optimizer, scheduler, val_metrics, args)
+
+    wandb.log(logging)
+    if checkpoint_path != "":
+        wandb.save(checkpoint_path)
 
 print("\nBest Validation Results:")
 val_metrics.report_best()
 
-finish_swa(
-    swa_model, train_loader, val_loader, criterion, weights_criterion, multiclass_criterion,
-    num_classes, include_background, args
-)
+if swa_model is not None:
+    checkpoint_path = finish_swa(
+        swa_model, train_loader, val_loader, criterion, weights_criterion, multiclass_criterion,
+        num_classes, include_background, args
+    )
+    wandb.save(checkpoint_path)
+
+if args.evaluate:
+
+    remove_predictions = True
+
+    path_gt = "data/MMs/Testing"
+    original_output_dir = args.output_dir
+
+    print("\n\nStart Model Test Prediction...")
+    args.output_dir = os.path.join(original_output_dir, "RESULTS")
+    test_prediction(args, model)
+    print("Finish!")
+    path_pred = os.path.join(args.output_dir, "test_predictions")
+    test_model_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions)
+    wandb.Table(dataframe=test_model_df)
+
+    if swa_model is not None:
+        print("\n\nStart SWA Model Test Prediction...")
+        args.output_dir = os.path.join(original_output_dir, "SWA_RESULTS")
+        test_prediction(args, swa_model)
+        print("Finish!")
+        path_pred = os.path.join(args.output_dir, "test_predictions")
+        test_model_swa_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions)
+        wandb.Table(dataframe=test_model_swa_df)
+
+wandb.finish()

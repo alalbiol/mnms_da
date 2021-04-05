@@ -79,9 +79,10 @@ python3 -u train.py --gpu $gpu --dataset $dataset --model_name $model --img_size
 --scheduler $scheduler --learning_rate $lr --swa_lr $swa_lr --optimizer $optimizer --criterion $criterion \
 --normalization $normalization --weights_criterion "$weights_criterion" --data_augmentation $data_augmentation \
 --output_dir "$output_dir" --metrics iou dice --problem_type $problem_type --mask_reshape_method $mask_reshape_method \
---scheduler_steps 70 100 --generated_overlays $generated_overlays --add_depth --rand_histogram_matching
+--scheduler_steps 70 100 --generated_overlays $generated_overlays --add_depth --rand_histogram_matching \
+--evaluate
 
-
+: '
 model_checkpoint="$output_dir/model_${model}_best_iou.pt"
 eval_dir="$output_dir/RESULTS"
 python3 -u predict.py --gpu $gpu --dataset $dataset --model_name $model --img_size $img_size --crop_size $crop_size \
@@ -102,6 +103,7 @@ python3 -u predict.py --gpu $gpu --dataset $dataset --model_name $model --img_si
 
 
 python3 -u tools/metrics_mnms.py --GT_IMG "data/MMs/Testing" --PRED_IMG "$eval_dir/test_predictions"  # --REMOVE_PREDS
+'
 
 ##################################################
 python tools/notify.py --msg "Experiments Finished"
