@@ -31,7 +31,6 @@ if __name__ == "__main__":
             input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm_layer,
             use_dropout=not args.no_dropout, gpu_ids=args.gpu, checkpoint=args.gen_checkpoint
         )
-        generator.eval()
 
     print("Predicting...")
     model.eval()
