@@ -140,7 +140,7 @@ if args.evaluate:
     print("Finish!")
     path_pred = os.path.join(args.output_dir, "test_predictions")
     test_model_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
-    wandb.Table(dataframe=test_model_df)
+    wandb.log({"Model Test Metrics": wandb.Table(dataframe=test_model_df)})
 
     if swa_model is not None:
         print("\n\nStart SWA Model Test Prediction...")
@@ -149,6 +149,6 @@ if args.evaluate:
         print("Finish!")
         path_pred = os.path.join(args.output_dir, "test_predictions")
         test_model_swa_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
-        wandb.Table(dataframe=test_model_swa_df)
+        wandb.log({"SWA Model Test Metrics": wandb.Table(dataframe=test_model_swa_df)})
 
 wandb.finish()

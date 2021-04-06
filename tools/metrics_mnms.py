@@ -426,7 +426,7 @@ def compute_metrics_on_directories(dir_gt, dir_pred, remove_preds, get_df=False)
     df = pd.DataFrame(res, columns=HEADER)
     df.to_csv(os.path.join(dir_pred, "results_{}.csv".format(time.strftime("%Y%m%d_%H%M"))), index=False)
     dice_cols = [col for col in df.columns if 'Dice' in col]
-    print(df.groupby(['Vendor'])[dice_cols].mean())
+    print(df.groupby(['Vendor']).mean().drop("Centre", axis=1))
 
     # Anonymised df for participants
     adf = pd.read_csv(os.path.join(dir_pred, "results_{}.csv".format(time.strftime("%Y%m%d_%H%M"))))
@@ -438,7 +438,7 @@ def compute_metrics_on_directories(dir_gt, dir_pred, remove_preds, get_df=False)
             os.remove(pred_path)
 
     if get_df:
-        return df
+        return df.groupby(['Vendor']).mean().drop("Centre", axis=1)
     return 1
 
 
