@@ -45,7 +45,6 @@ if args.gen_checkpoint != "":
         use_dropout=not args.no_dropout, gpu_ids=args.gpu, checkpoint=args.gen_checkpoint
     )
     set_grad([generator], False)
-    generator.eval()
 
 criterion, weights_criterion, multiclass_criterion = get_criterion(args.criterion, args.weights_criterion)
 optimizer = get_optimizer(args.optimizer, model, lr=args.learning_rate)
@@ -137,19 +136,19 @@ if args.evaluate:
 
     print("\n\nStart Model Test Prediction...")
     args.output_dir = os.path.join(original_output_dir, "RESULTS")
-    test_prediction(args, model)
+    test_prediction(args, model, generator)
     print("Finish!")
     path_pred = os.path.join(args.output_dir, "test_predictions")
-    test_model_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions)
+    test_model_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
     wandb.Table(dataframe=test_model_df)
 
     if swa_model is not None:
         print("\n\nStart SWA Model Test Prediction...")
         args.output_dir = os.path.join(original_output_dir, "SWA_RESULTS")
-        test_prediction(args, swa_model)
+        test_prediction(args, swa_model, generator)
         print("Finish!")
         path_pred = os.path.join(args.output_dir, "test_predictions")
-        test_model_swa_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions)
+        test_model_swa_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
         wandb.Table(dataframe=test_model_swa_df)
 
 wandb.finish()

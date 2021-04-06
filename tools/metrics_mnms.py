@@ -353,7 +353,7 @@ def compute_metrics_on_files(path_gt, path_pred, remove_pred):
         os.remove(path_pred)
 
 
-def compute_metrics_on_directories(dir_gt, dir_pred, remove_preds):
+def compute_metrics_on_directories(dir_gt, dir_pred, remove_preds, get_df=False):
     """
     Function to generate a csv file for each images of two directories.
 
@@ -437,6 +437,8 @@ def compute_metrics_on_directories(dir_gt, dir_pred, remove_preds):
         for pred_path in lst_pred:
             os.remove(pred_path)
 
+    if get_df:
+        return df
     return 1
 
 
