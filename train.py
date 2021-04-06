@@ -41,7 +41,7 @@ swa_model = None
 generator = None
 if args.gen_checkpoint != "":
     generator = define_Gen(
-        input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm_layer,
+        input_nc=3 if args.add_depth else 1, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm_layer,
         use_dropout=not args.no_dropout, gpu_ids=args.gpu, checkpoint=args.gen_checkpoint
     )
     set_grad([generator], False)

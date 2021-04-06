@@ -34,12 +34,13 @@ print(f"Number of vendors: {AVAILABLE_LABELS}")
 # Define the networks
 #####################################################
 generator = define_Gen(
-    input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.gen_norm_layer,
+    input_nc=3 if args.add_depth else 1, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.gen_norm_layer,
     use_dropout=not args.no_dropout, gpu_ids=args.gpu, checkpoint=args.gen_checkpoint
 )
 discriminator = define_Dis(
-    input_nc=3, ndf=args.ndf, netD=args.dis_net, n_layers_D=3, norm=args.dis_norm_layer, gpu_ids=args.gpu,
-    checkpoint=args.dis_checkpoint, real_fake=(args.realfake_coef > 0), num_classes=len(AVAILABLE_LABELS)
+    input_nc=3 if args.add_depth else 1, ndf=args.ndf, netD=args.dis_net, n_layers_D=3, norm=args.dis_norm_layer,
+    gpu_ids=args.gpu, checkpoint=args.dis_checkpoint, real_fake=(args.realfake_coef > 0),
+    num_classes=len(AVAILABLE_LABELS)
 )
 segmentator = model_selector(
     "segmentation", args.seg_net, num_classes,
@@ -63,10 +64,10 @@ d_lr_scheduler = torch.optim.lr_scheduler.LambdaLR(
     d_optimizer, lr_lambda=LambdaLR(args.epochs, 0, args.decay_epoch).step
 )
 
+vendors_samples = None
 if args.plot_examples:
     print("Generating samples to plot...")
     vendors_samples = get_vendors_samples(args.normalization)
-
 
 wandb.init(project="MnMs DASEGAN", config=args)  # name="experiment1",
 
@@ -193,15 +194,23 @@ for epoch in range(args.epochs):
         vol_label_u = map2multiclass(vol_label_u)
 
         label_size = np.prod(list(vol_x_original_label_rfield.shape))
-        vol_x_vendor_acc.append((torch.sum(vol_label_x == vol_x_original_label_rfield.squeeze()) / label_size).item())
-        vol_u_vendor_acc.append(((torch.sum(vol_label_u == vol_x_original_label_rfield.squeeze()) / label_size).item()))
+        vol_x_vendor_acc.append(
+            (torch.sum(torch.tensor(vol_label_x) == vol_x_original_label_rfield.squeeze()) / label_size).item()
+        )
+        vol_u_vendor_acc.append(
+            (torch.sum(torch.tensor(vol_label_u) == vol_x_original_label_rfield.squeeze()) / label_size).item()
+        )
 
         if args.realfake_coef > 0:
             vol_x_realfake_acc.append(
-                (torch.sum((vol_real_label_x > 0.5) == torch.ones_like(vol_real_label_x).cuda()) / label_size).item()
+                (torch.sum(
+                    torch.tensor(torch.sigmoid(vol_real_label_x) > 0.5) == torch.ones_like(vol_real_label_x).cuda()
+                ) / label_size).item()
             )
             vol_u_realfake_acc.append(
-                (torch.sum((vol_fake_label_u > 0.5) == torch.zeros_like(vol_real_label_x).cuda()) / label_size).item()
+                (torch.sum(
+                    torch.tensor(torch.sigmoid(vol_fake_label_u) > 0.5) == torch.zeros_like(vol_real_label_x).cuda()
+                ) / label_size).item()
             )
 
         # --- Segmentator metrics ---
@@ -210,8 +219,6 @@ for epoch in range(args.epochs):
             if mask is not None:
                 vol_x_iou.append(evaluate_segmentation(pred_x.detach()[mask_index], mask.squeeze()))
                 vol_u_iou.append(evaluate_segmentation(pred_u.detach()[mask_index], mask.squeeze()))
-
-        break
 
     logging = {}
 
