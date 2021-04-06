@@ -49,7 +49,7 @@ defrost_epoch=-1
 # constant - steps - plateau - one_cycle_lr (max_lr) - cyclic (min_lr, max_lr, scheduler_steps)
 scheduler="steps"
 lr=0.001
-swa_lr=0.0064
+swa_lr=0.00256
 # Available optimizers:
 # adam - sgd - over9000
 optimizer="adam"
@@ -59,7 +59,7 @@ optimizer="adam"
 # "scale" - "optical_distortion" - "coarse_dropout" or "cutout" - "downscale"
 data_augmentation="mms2d"
 
-normalization="standardize"  # reescale - standardize - standardize_full_vol - standardize_phase
+normalization="negative1_positive1"  # reescale - standardize - standardize_full_vol - standardize_phase
 mask_reshape_method="padd"  # padd - resize
 
 generated_overlays=0
@@ -74,12 +74,13 @@ weights_criterion="0.4, 0.5, 0.1"
 output_dir="results/$dataset/$model/$optimizer/${scheduler}_lr${lr}/${criterion}_weights${weights_criterion}"
 output_dir="$output_dir/normalization_${normalization}/da${data_augmentation}"
 
+#  --generated_overlays $generated_overlays --add_depth --rand_histogram_matching
 python3 -u train.py --gpu $gpu --dataset $dataset --model_name $model --img_size $img_size --crop_size $crop_size \
 --epochs $epochs --swa_start $swa_start --batch_size $batch_size --defrost_epoch $defrost_epoch \
 --scheduler $scheduler --learning_rate $lr --swa_lr $swa_lr --optimizer $optimizer --criterion $criterion \
 --normalization $normalization --weights_criterion "$weights_criterion" --data_augmentation $data_augmentation \
 --output_dir "$output_dir" --metrics iou dice --problem_type $problem_type --mask_reshape_method $mask_reshape_method \
---scheduler_steps 70 100 --generated_overlays $generated_overlays --add_depth --rand_histogram_matching \
+--scheduler_steps 70 100 \
 --evaluate
 
 : '
