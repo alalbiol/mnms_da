@@ -523,9 +523,10 @@ def finish_swa(
     swa_epochs = args.epochs - args.swa_start
 
     checkpoint_path = f"model_{args.model_name}_{swa_epochs}epochs_swalr{args.swa_lr}.pt"
+    checkpoint_path = os.path.join(args.output_dir, checkpoint_path)
     torch.save(
         swa_model.state_dict(),
-        os.path.join(args.output_dir, checkpoint_path)
+        checkpoint_path
     )
 
     swa_metrics = MetricsAccumulator(
