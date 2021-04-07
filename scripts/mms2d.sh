@@ -37,8 +37,8 @@ problem_type="segmentation"
 #   -> resnet18_pspnet_unet - resnet34_pspnet_unet
 model="resnet18_unet_scratch"
 
-img_size=224
-crop_size=224
+img_size=256
+crop_size=256
 batch_size=32
 
 epochs=170
@@ -62,7 +62,6 @@ data_augmentation="mms2d"
 normalization="negative1_positive1"  # reescale - standardize - standardize_full_vol - standardize_phase
 mask_reshape_method="padd"  # padd - resize
 
-generated_overlays=0
 
 # Available criterions:
 # bce - bce_dice - bce_dice_ac - bce_dice_border - bce_dice_border_ce
@@ -74,6 +73,7 @@ weights_criterion="0.4, 0.5, 0.1"
 output_dir="results/$dataset/$model/$optimizer/${scheduler}_lr${lr}/${criterion}_weights${weights_criterion}"
 output_dir="$output_dir/normalization_${normalization}/da${data_augmentation}"
 
+#generated_overlays=0
 #  --generated_overlays $generated_overlays --add_depth --rand_histogram_matching
 python3 -u train.py --gpu $gpu --dataset $dataset --model_name $model --img_size $img_size --crop_size $crop_size \
 --epochs $epochs --swa_start $swa_start --batch_size $batch_size --defrost_epoch $defrost_epoch \
@@ -82,29 +82,6 @@ python3 -u train.py --gpu $gpu --dataset $dataset --model_name $model --img_size
 --output_dir "$output_dir" --metrics iou dice --problem_type $problem_type --mask_reshape_method $mask_reshape_method \
 --scheduler_steps 70 100 \
 --evaluate
-
-: '
-model_checkpoint="$output_dir/model_${model}_best_iou.pt"
-eval_dir="$output_dir/RESULTS"
-python3 -u predict.py --gpu $gpu --dataset $dataset --model_name $model --img_size $img_size --crop_size $crop_size \
---batch_size $batch_size --normalization $normalization --output_dir "$eval_dir" \
---problem_type $problem_type --mask_reshape_method $mask_reshape_method --metrics iou dice \
---generated_overlays $generated_overlays --add_depth --model_checkpoint "$model_checkpoint"
-
-python3 -u tools/metrics_mnms.py --GT_IMG "data/MMs/Testing" --PRED_IMG "$eval_dir/test_predictions"  # --REMOVE_PREDS
-
-
-swa_total_epochs="$((epochs-swa_start))"
-model_checkpoint="$output_dir/model_${model}_${swa_total_epochs}epochs_swalr${swa_lr}.pt"
-eval_dir="$output_dir/SWA_RESULTS"
-python3 -u predict.py --gpu $gpu --dataset $dataset --model_name $model --img_size $img_size --crop_size $crop_size \
---batch_size $batch_size --normalization $normalization --output_dir "$eval_dir" \
---problem_type $problem_type --mask_reshape_method $mask_reshape_method --metrics iou dice \
---generated_overlays $generated_overlays --add_depth --model_checkpoint "$model_checkpoint" --swa_checkpoint
-
-
-python3 -u tools/metrics_mnms.py --GT_IMG "data/MMs/Testing" --PRED_IMG "$eval_dir/test_predictions"  # --REMOVE_PREDS
-'
 
 ##################################################
 python tools/notify.py --msg "Experiments Finished"
