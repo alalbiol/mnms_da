@@ -34,8 +34,8 @@ print(f"Number of vendors: {AVAILABLE_LABELS}")
 # Define the networks
 #####################################################
 generator = define_Gen(
-    input_nc=3 if args.add_depth else 1, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.gen_norm_layer,
-    use_dropout=not args.no_dropout, gpu_ids=args.gpu, checkpoint=args.gen_checkpoint
+    input_nc=3 if args.add_depth else 1, output_nc=3 if args.add_depth else 1, ngf=args.ngf, netG=args.gen_net,
+    norm=args.gen_norm_layer, use_dropout=not args.no_dropout, gpu_ids=args.gpu, checkpoint=args.gen_checkpoint
 )
 discriminator = define_Dis(
     input_nc=3 if args.add_depth else 1, ndf=args.ndf, netD=args.dis_net, n_layers_D=3, norm=args.dis_norm_layer,
@@ -124,7 +124,9 @@ for epoch in range(args.epochs):
         vol_fake_label_u, vol_vendor_label_u = discriminator(vol_u)
 
         random_labels = get_random_labels(vol_x_original_label, AVAILABLE_LABELS)
-        random_labels = labels2rfield(random_labels, vol_vendor_label_u.shape).to(vol_vendor_label_u.device)
+        random_labels = labels2rfield(
+            method=args.rfield_method, shape=vol_vendor_label_u.shape, label_range=None, labels=random_labels
+        ).to(vol_vendor_label_u.device)
 
         vendor_label_loss_u = dis_labels_criterion(vol_vendor_label_u, random_labels)
 
@@ -154,7 +156,9 @@ for epoch in range(args.epochs):
         vol_fake_label_u, vol_label_u = discriminator(vol_u.detach())
 
         # --- Discriminator losses ---
-        vol_x_original_label_rfield = labels2rfield(vol_x_original_label, vol_label_x.shape).to(vol_label_x.device)
+        vol_x_original_label_rfield = labels2rfield(
+            method="maps", shape=vol_label_x.shape, labels=vol_x_original_label
+        ).to(vol_label_x.device)
         vol_x_label_dis_loss = dis_labels_criterion(vol_label_x, vol_x_original_label_rfield) * 0.5
         vol_u_label_dis_loss = dis_labels_criterion(vol_label_u, vol_x_original_label_rfield) * args.dis_u_coef
 
@@ -188,7 +192,9 @@ for epoch in range(args.epochs):
         vol_real_label_x, vol_label_x = discriminator(vol_x)
         vol_fake_label_u, vol_label_u = discriminator(vol_u.detach())
 
-        vol_x_original_label_rfield = labels2rfield(vol_x_original_label, vol_label_x.shape).to(vol_label_x.device)
+        vol_x_original_label_rfield = labels2rfield(
+            method="maps", shape=vol_label_x.shape, labels=vol_x_original_label
+        ).to(vol_label_x.device)
 
         vol_label_x = map2multiclass(vol_label_x)
         vol_label_u = map2multiclass(vol_label_u)

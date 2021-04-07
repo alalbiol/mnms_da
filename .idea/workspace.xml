@@ -2,16 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e74aa284-0ca1-4a3d-b39d-f37e6389a162" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/utils/mnms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dasegan.py" beforeDir="false" afterPath="$PROJECT_DIR$/dasegan.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/predict.py" beforeDir="false" afterPath="$PROJECT_DIR$/predict.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/dasegan_v1.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/dasegan_v1.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/mms2d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d_acdc172d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d_acdc172d.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tools/metrics_mnms.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/metrics_mnms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/arguments.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/arguments.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/dasegan_arguments.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/dasegan_arguments.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/gans.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/gans.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/mnms.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/mnms.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -154,7 +153,12 @@
       <workItem from="1617356264182" duration="4165000" />
       <workItem from="1617531549499" duration="3629000" />
       <workItem from="1617604923587" duration="324000" />
-      <workItem from="1617614975607" duration="8269000" />
+      <workItem from="1617614975607" duration="9043000" />
+      <workItem from="1617688452108" duration="3615000" />
+      <workItem from="1617720873137" duration="2914000" />
+      <workItem from="1617723824188" duration="20000" />
+      <workItem from="1617775087772" duration="583000" />
+      <workItem from="1617775805133" duration="2980000" />
     </task>
     <task id="LOCAL-00001" summary="fix">
       <created>1607432585436</created>
@@ -401,7 +405,63 @@
       <option name="project" value="LOCAL" />
       <updated>1617618187003</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="wandb integration">
+      <created>1617637158398</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1617637158398</updated>
+    </task>
+    <task id="LOCAL-00037" summary="refactor">
+      <created>1617688508024</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1617688508024</updated>
+    </task>
+    <task id="LOCAL-00038" summary="fix wandb logging">
+      <created>1617689582815</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1617689582815</updated>
+    </task>
+    <task id="LOCAL-00039" summary="fix metrics and one channel">
+      <created>1617723390887</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1617723390887</updated>
+    </task>
+    <task id="LOCAL-00040" summary="fix naming">
+      <created>1617775351558</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1617775351558</updated>
+    </task>
+    <task id="LOCAL-00041" summary="fix paths">
+      <created>1617775560943</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1617775560943</updated>
+    </task>
+    <task id="LOCAL-00042" summary="remove unused">
+      <created>1617775662850</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1617775662850</updated>
+    </task>
+    <task id="LOCAL-00043" summary="fix hyper">
+      <created>1617775868726</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1617775868726</updated>
+    </task>
+    <option name="localTasksCounter" value="44" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -420,13 +480,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="tagged" />
-    <MESSAGE value="more data partition options, coral improvements" />
-    <MESSAGE value="integrating coral" />
-    <MESSAGE value="concat acdc" />
-    <MESSAGE value="coral things" />
-    <MESSAGE value="enable adding C to coral loss" />
-    <MESSAGE value="take num vols into account coral" />
     <MESSAGE value="fix" />
     <MESSAGE value="interpolation and deconvolution arg" />
     <MESSAGE value="use generator dasegan" />
@@ -445,7 +498,14 @@
     <MESSAGE value="fix typo" />
     <MESSAGE value="fix number of classes" />
     <MESSAGE value="wandb integration" />
-    <option name="LAST_COMMIT_MESSAGE" value="wandb integration" />
+    <MESSAGE value="refactor" />
+    <MESSAGE value="fix wandb logging" />
+    <MESSAGE value="fix metrics and one channel" />
+    <MESSAGE value="fix naming" />
+    <MESSAGE value="fix paths" />
+    <MESSAGE value="remove unused" />
+    <MESSAGE value="fix hyper" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix hyper" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -475,15 +535,10 @@
           <line>255</line>
           <option name="timeStamp" value="41" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/train.py</url>
-          <line>74</line>
-          <option name="timeStamp" value="47" />
-        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/mnms_da$.coverage" NAME=" Coverage Results" MODIFIED="1617632027093" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/mnms_da$.coverage" NAME=" Coverage Results" MODIFIED="1617721995502" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>

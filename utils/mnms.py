@@ -30,8 +30,9 @@ def test_prediction(args, model=None, generator=None):
         if args.gen_checkpoint != "":
             print("Using Generator!")
             generator = define_Gen(
-                input_nc=3 if args.add_depth else 1, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm_layer,
-                use_dropout=not args.no_dropout, gpu_ids=args.gpu, checkpoint=args.gen_checkpoint
+                input_nc=3 if args.add_depth else 1, output_nc=3 if args.add_depth else 1, ngf=args.ngf,
+                netG=args.gen_net, norm=args.norm_layer, use_dropout=not args.no_dropout, gpu_ids=args.gpu,
+                checkpoint=args.gen_checkpoint
             )
 
     model.eval()

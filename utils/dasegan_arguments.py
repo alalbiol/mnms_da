@@ -48,6 +48,11 @@ parser.add_argument('--gen_net', type=str, default='resnet_9blocks', help='Model
 parser.add_argument('--dis_labels_criterion', type=str, default='mse', help='Loss for vendor labels training')
 parser.add_argument('--dis_realfake_criterion', type=str, default='mse', help='Loss for real fake training')
 
+parser.add_argument(
+    '--rfield_method', type=str, required=True, choices=["random_maps", "random_atomic"],
+    help='How to generate maps for generator vendor training from discriminator output (vendor branch)'
+)
+
 parser.add_argument('--gen_norm_layer', type=str, default='instance', help='Generator normalization layer type')
 parser.add_argument('--dis_norm_layer', type=str, default='instance', help='Discriminator normalization layer type')
 parser.add_argument(

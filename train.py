@@ -41,8 +41,8 @@ swa_model = None
 generator = None
 if args.gen_checkpoint != "":
     generator = define_Gen(
-        input_nc=3 if args.add_depth else 1, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm_layer,
-        use_dropout=not args.no_dropout, gpu_ids=args.gpu, checkpoint=args.gen_checkpoint
+        input_nc=3 if args.add_depth else 1, output_nc=3 if args.add_depth else 1, ngf=args.ngf, netG=args.gen_net,
+        norm=args.norm_layer, use_dropout=not args.no_dropout, gpu_ids=args.gpu, checkpoint=args.gen_checkpoint
     )
     set_grad([generator], False)
 
@@ -140,7 +140,10 @@ if args.evaluate:
     print("Finish!")
     path_pred = os.path.join(args.output_dir, "test_predictions")
     test_model_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
-    wandb.log({"Model Test Metrics": wandb.Table(dataframe=test_model_df)})
+    wandb.log({"Model Test Metrics By Centre": wandb.Table(
+        dataframe=test_model_df.groupby(['Centre']).mean().reset_index())
+    })
+    wandb.save(os.path.join(path_pred, "*.csv"))
 
     if swa_model is not None:
         print("\n\nStart SWA Model Test Prediction...")
@@ -149,6 +152,9 @@ if args.evaluate:
         print("Finish!")
         path_pred = os.path.join(args.output_dir, "test_predictions")
         test_model_swa_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
-        wandb.log({"SWA Model Test Metrics": wandb.Table(dataframe=test_model_swa_df)})
+        wandb.log({"SWA Model Test Metrics By Centre": wandb.Table(
+            dataframe=test_model_swa_df.groupby(['Centre']).mean().reset_index()
+        )})
+        wandb.save(os.path.join(path_pred, "*.csv"))
 
 wandb.finish()

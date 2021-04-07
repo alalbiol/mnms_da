@@ -55,13 +55,21 @@ def get_random_labels(vol_x_original_label, available_labels):
     return torch.from_numpy(np.array(res))
 
 
-def labels2rfield(labels, shape):
+def labels2rfield(method, shape, label_range=None, labels=None):
     # vol_label_u has shape [batch, channels, receptive_field, receptive_field], to be able to multiply
     # with random labels, we have to transform list labels shape [batch] to [batch, 1, 1]
     # eg. labels -> [0,1,0,2,0]
-    batch, channels, height, width = shape
-    labels = labels.unsqueeze(1).unsqueeze(1)
-    labels = torch.ones((batch, height, width), dtype=torch.long).to(labels.device) * labels
+
+    if method == "random_maps" or method == "maps":
+        batch, channels, height, width = shape
+        labels = labels.unsqueeze(1).unsqueeze(1)
+        labels = torch.ones((batch, height, width), dtype=torch.long) * labels
+    elif method == "random_atomic":
+        batch, channels, height, width = shape
+        min_val, max_val = label_range
+        labels = torch.randint(min_val, max_val, (batch, height, width), dtype=torch.long)
+    else:
+        assert False, f"Unknown labels2rfield method '{method}'"
     return labels
 
 
