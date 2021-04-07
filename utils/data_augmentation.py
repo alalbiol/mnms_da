@@ -40,18 +40,6 @@ def data_augmentation_selector(da_policy, img_size, crop_size, mask_reshape_meth
     elif da_policy == "downscale":
         return da_policy_downscale(img_size, mask_reshape_method, verbose=verbose)
 
-    elif da_policy == "drive":
-        return drive_da(img_size, mask_reshape_method, verbose=verbose)
-
-    elif da_policy == "simepu_segmentation":
-        return simepu_segmentation_da(img_size, mask_reshape_method, verbose=verbose)
-
-    elif da_policy == "lvsc2d":
-        return lvsc2d_segmentation_da(img_size, mask_reshape_method, verbose=verbose)
-
-    elif da_policy == "acdc172d":
-        return lvsc2d_segmentation_da(img_size, mask_reshape_method, verbose=verbose)
-
     elif da_policy == "mms2d":
         return mms2d_segmentation_da(img_size, mask_reshape_method, verbose=verbose)
 
