@@ -9,7 +9,7 @@ from utils.data_augmentation import data_augmentation_selector
 from utils.datasets import dataset_selector, coral_dataset_selector
 from models.gan import define_Gen
 from utils.gans import set_grad
-from utils.logging import log_epoch, build_header
+from utils.logging import log_epoch, build_header, get_name
 from utils.mnms import test_prediction
 from utils.neural import *
 import os
@@ -68,7 +68,7 @@ val_metrics = MetricsAccumulator(
 full_criterion = [args.criterion]
 full_criterion += ["coral"] if args.coral else ""
 
-wandb.init(project="MnMs Segmentation", config=args)  # name="experiment1",
+wandb.init(project="MnMs Segmentation", name=get_name(), config=args)  # name="experiment1",
 
 header, defrosted = build_header(class_to_cat, full_criterion, args.metrics, display=True), False
 for current_epoch in range(args.epochs):

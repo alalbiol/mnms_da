@@ -1,6 +1,8 @@
 # https://pyformat.info/
 
 from utils.general import current_time
+import socket
+import uuid
 
 
 def build_header(class_to_cat, criterion_list, metric_list, display=True):
@@ -49,3 +51,7 @@ def log_epoch(current_epoch, current_lr, train_metrics, val_metrics, header):
     ))
 
     print(*["-"] * (len(header) // 2))
+
+
+def get_name():
+    return f"{socket.gethostname().upper()}-{uuid.uuid4().hex}"

@@ -7,6 +7,7 @@ from models.gan import define_Gen, define_Dis
 from utils.dasegan_arguments import *
 from utils.data_augmentation import data_augmentation_selector
 from utils.datasets import dataset_selector
+from utils.logging import get_name
 from utils.neural import *
 from utils.gans import *
 
@@ -69,7 +70,7 @@ if args.plot_examples:
     print("Generating samples to plot...")
     vendors_samples = get_vendors_samples(args.normalization)
 
-wandb.init(project="MnMs DASEGAN", config=args)  # name="experiment1",
+wandb.init(project="MnMs DASEGAN", name=get_name(), config=args)  # name="experiment1",
 
 print("\n\n --- START TRAINING --\n")
 segmentator.eval()
