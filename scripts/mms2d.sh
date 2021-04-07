@@ -1,31 +1,5 @@
 #!/bin/bash
 
-# Only download data --> ./scripts/mms2d.sh only_data
-
-# Check if MMs data is available, if not download
-if [ ! -d "data/MMs" ]
-then
-    echo "MMs data not found at 'data' directory. Downloading..."
-
-    curl -O -J https://nextcloud.maparla.duckdns.org/s/psektTSfsaFa6Xr/download
-    mkdir -p data
-    tar -zxf MMs_Oficial.tar.gz  -C data/
-    rm MMs_Oficial.tar.gz
-
-    curl -O -J https://nextcloud.maparla.duckdns.org/s/BqYoWaYbTB9C83m/download
-    mkdir -p data
-    tar -zxf MMs_Meta.tar.gz  -C data/MMs
-    rm MMs_Meta.tar.gz
-
-    [ "$1" == "only_data" ] && exit
-
-    echo "Done!"
-else
-  echo "MMs data already downloaded!"
-  [ "$1" == "only_data" ] && exit
-fi
-
-
 gpu="0,1"
 dataset="mms2d"
 problem_type="segmentation"
@@ -41,7 +15,7 @@ img_size=256
 crop_size=256
 batch_size=32
 
-epochs=170
+epochs=200
 swa_start=130
 defrost_epoch=-1
 
@@ -61,7 +35,6 @@ data_augmentation="mms2d"
 
 normalization="negative1_positive1"  # reescale - standardize - standardize_full_vol - standardize_phase
 mask_reshape_method="padd"  # padd - resize
-
 
 # Available criterions:
 # bce - bce_dice - bce_dice_ac - bce_dice_border - bce_dice_border_ce
