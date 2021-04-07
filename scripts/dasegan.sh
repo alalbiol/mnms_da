@@ -1,32 +1,6 @@
 #!/bin/bash
 
-# Only download data --> ./scripts/mms2d.sh only_data
-
-# Check if MMs data is available, if not download
-if [ ! -d "data/MMs" ]
-then
-    echo "MMs data not found at 'data' directory. Downloading..."
-
-    curl -O -J https://nextcloud.maparla.duckdns.org/s/psektTSfsaFa6Xr/download
-    mkdir -p data
-    tar -zxf MMs_Oficial.tar.gz  -C data/
-    rm MMs_Oficial.tar.gz
-
-    curl -O -J https://nextcloud.maparla.duckdns.org/s/BqYoWaYbTB9C83m/download
-    mkdir -p data
-    tar -zxf MMs_Meta.tar.gz  -C data/MMs
-    rm MMs_Meta.tar.gz
-
-    [ "$1" == "only_data" ] && exit
-
-    echo "Done!"
-else
-  echo "MMs data already downloaded!"
-  [ "$1" == "only_data" ] && exit
-fi
-
-
-gpu="0"
+gpu="0,1"
 dataset="mms2d_full_unlabeled_ncl"
 seed=42
 
@@ -51,10 +25,10 @@ gen_checkpoint="DASEGAN_EXPERIMENTS/dasegan_v04_2_1_2_dis_u_coef/dis_u_2/checkpo
 
 img_size=256
 crop_size=256
-batch_size=4
+batch_size=16
 
-epochs=200
-decay_epoch=100
+epochs=80
+decay_epoch=60
 
 lr=0.0002
 
@@ -63,13 +37,12 @@ data_augmentation="mms2d"
 normalization="negative1_positive1"
 mask_reshape_method="padd"
 
-generated_samples=25
+rfield_method="random_maps"  # "random_maps" - "random_atomic"
 
 #cycle_coef=0.5
 dis_u_coef=0.0
 realfake_coef=0.2
-for cycle_coef in 0.5 1.0
-do
+cycle_coef=0.5
 
 model_dir="GENERATOR_${gen_net}_${gen_upsample}_DISCRIMINATOR_${dis_net}_SEGMENTATOR_${seg_net}"
 output_dir="results/$dataset/DASEGAN/$model_dir"
@@ -84,11 +57,9 @@ python3 -u dasegan.py --gpu $gpu --seed $seed  --output_dir "$output_dir" \
 --gen_norm_layer $gen_norm_layer --dis_norm_layer $dis_norm_layer --ngf $ngf --ndf $ndf \
 --seg_checkpoint "$seg_checkpoint" --dis_checkpoint "$dis_checkpoint" --gen_checkpoint "$gen_checkpoint" \
 --cycle_coef $cycle_coef --realfake_coef $realfake_coef --dis_u_coef $dis_u_coef \
---generated_samples $generated_samples \
+--plot_examples --rfield_method $rfield_method \
 --no_dropout --use_original_mask \
 --dis_labels_criterion $dis_labels_criterion --dis_realfake_criterion $dis_realfake_criterion
-
-done
 
 ############################################################
 python tools/notify.py --msg "DASEGAN - Experiments Finished"
