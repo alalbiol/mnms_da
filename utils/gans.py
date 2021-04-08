@@ -214,21 +214,21 @@ def plot_save_kernels(kernel, save_dir,  path_info="", by_kernel=True):
             plt.close()
 
 
-def get_vendors_samples(normalization):
+def get_vendors_samples(normalization, add_depth=False):
     rows, cols = 10, 4
     num_test_samples = rows * cols
 
     img_list_a = get_mnms_arrays(
-        "A", normalization=normalization, add_depth=True,
+        "A", normalization=normalization, add_depth=add_depth,
     )
     img_list_b = get_mnms_arrays(
-        "B", normalization=normalization, add_depth=True
+        "B", normalization=normalization, add_depth=add_depth
     )
     img_list_c = get_mnms_arrays(
-        "C", normalization=normalization, data_mod="_unlabeled", add_depth=True
+        "C", normalization=normalization, data_mod="_unlabeled", add_depth=add_depth
     )
     img_list_d = get_mnms_arrays(
-        "D", normalization=normalization, data_mod="_unlabeled_full", partition="Testing", add_depth=True
+        "D", normalization=normalization, data_mod="_unlabeled_full", partition="Testing", add_depth=add_depth
     )
 
     np.random.seed(42)
