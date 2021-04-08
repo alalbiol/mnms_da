@@ -63,7 +63,7 @@ def labels2rfield(method, shape, label_range=None, labels=None):
     if method == "random_maps" or method == "maps":
         batch, channels, height, width = shape
         labels = labels.unsqueeze(1).unsqueeze(1)
-        labels = torch.ones((batch, height, width), dtype=torch.long) * labels
+        labels = torch.ones((batch, height, width), dtype=torch.long).to(labels.device) * labels
     elif method == "random_atomic":
         batch, channels, height, width = shape
         min_val, max_val = label_range
