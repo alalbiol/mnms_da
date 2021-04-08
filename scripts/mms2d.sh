@@ -15,7 +15,7 @@ img_size=256
 crop_size=256
 batch_size=32
 
-epochs=200
+epochs=170
 swa_start=130
 defrost_epoch=-1
 

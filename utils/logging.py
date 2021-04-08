@@ -53,5 +53,6 @@ def log_epoch(current_epoch, current_lr, train_metrics, val_metrics, header):
     print(*["-"] * (len(header) // 2))
 
 
-def get_name():
-    return f"{socket.gethostname().upper()}-{uuid.uuid4().hex}"
+def get_name(unique_id):
+    # unique_id -> https://serverfault.com/questions/103359/how-to-create-a-uuid-in-bash
+    return f"{socket.gethostname().upper()}-{unique_id}"

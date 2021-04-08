@@ -51,7 +51,7 @@ segmentator = model_selector(
 # Define Loss criterion
 dis_labels_criterion = get_loss(args.dis_labels_criterion)
 dis_realfake_criterion = get_loss(args.dis_realfake_criterion)
-L1 = nn.L1Loss()
+identity_mask_criterion = nn.L1Loss()
 
 # Define Optimizers
 #####################################################
@@ -70,7 +70,7 @@ if args.plot_examples:
     print("Generating samples to plot...")
     vendors_samples = get_vendors_samples(args.normalization)
 
-wandb.init(project="MnMs DASEGAN", name=get_name(), config=args)  # name="experiment1",
+wandb.init(project="MnMs DASEGAN", name=get_name(args.unique_id), config=args)  # name="experiment1",
 
 print("\n\n --- START TRAINING --\n")
 segmentator.eval()
@@ -119,17 +119,18 @@ for epoch in range(args.epochs):
                     pred_x[mask_index] = F.one_hot(mask.squeeze().to(torch.int64), 4).permute(2, 0, 1).cuda()
 
         # --- Identity/Cycle losses ---
-        cycle_loss = L1(pred_x, pred_u) * args.cycle_coef
+        cycle_loss = identity_mask_criterion(pred_x, pred_u) * args.cycle_coef
 
         # --- Adversarial losses: Vendor Label ---
         vol_fake_label_u, vol_vendor_label_u = discriminator(vol_u)
 
         random_labels = get_random_labels(vol_x_original_label, AVAILABLE_LABELS)
         random_labels = labels2rfield(
-            method=args.rfield_method, shape=vol_vendor_label_u.shape, label_range=None, labels=random_labels
+            method=args.rfield_method, shape=vol_vendor_label_u.shape,
+            label_range=(0, len(AVAILABLE_LABELS)+1), labels=random_labels
         ).to(vol_vendor_label_u.device)
 
-        vendor_label_loss_u = dis_labels_criterion(vol_vendor_label_u, random_labels)
+        vendor_label_loss_u = dis_labels_criterion(vol_vendor_label_u, random_labels) * args.vendor_label_coef
 
         # --- Adversarial losses: Real/Fake Label ---
         fake_label_loss_u = 0
@@ -160,7 +161,7 @@ for epoch in range(args.epochs):
         vol_x_original_label_rfield = labels2rfield(
             method="maps", shape=vol_label_x.shape, labels=vol_x_original_label
         ).to(vol_label_x.device)
-        vol_x_label_dis_loss = dis_labels_criterion(vol_label_x, vol_x_original_label_rfield) * 0.5
+        vol_x_label_dis_loss = dis_labels_criterion(vol_label_x, vol_x_original_label_rfield)
         vol_u_label_dis_loss = dis_labels_criterion(vol_label_u, vol_x_original_label_rfield) * args.dis_u_coef
 
         # -- Real/Fake Label --

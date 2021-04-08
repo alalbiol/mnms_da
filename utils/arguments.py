@@ -88,6 +88,8 @@ parser.add_argument('--norm_layer', type=str, default='instance', help='instance
 parser.add_argument('--no_dropout', action='store_true', help='no dropout for the generator')
 parser.add_argument('--gen_checkpoint', type=str, default="", help='If there is a generator checkpoint to load')
 
+parser.add_argument('--unique_id', type=str, required=True, help='Unique identifier for current run')
+
 parser.add_argument('--evaluate', action='store_true', help='Whether evaluate using test partition or not')
 
 args = parser.parse_args()

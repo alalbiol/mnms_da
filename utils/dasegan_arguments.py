@@ -18,8 +18,8 @@ parser.add_argument("--gpu", type=str, default="0,1")
 parser.add_argument("--seed", type=int, default=2020)
 parser.add_argument('--output_dir', type=str, help='Where progress/checkpoints will be saved')
 
-parser.add_argument('--epochs', type=int, default=200, help='Total number epochs for training')
-parser.add_argument('--decay_epoch', type=int, default=100)
+parser.add_argument('--epochs', type=int, default=80, help='Total number epochs for training')
+parser.add_argument('--decay_epoch', type=int, default=60)
 parser.add_argument('--lr', type=float, default=0.0002, help='Learning rate')
 
 parser.add_argument('--batch_size', type=int, default=64, help='Batch Size for training')
@@ -29,8 +29,8 @@ parser.add_argument('--dataset', type=str, help='Which dataset use')
 parser.add_argument('--use_original_mask', action='store_true', help='Whether use original mask labels when available')
 
 parser.add_argument('--data_augmentation', type=str, help='Apply data augmentations at train time')
-parser.add_argument('--img_size', type=int, default=224, help='Final img squared size')
-parser.add_argument('--crop_size', type=int, default=224, help='Center crop squared size')
+parser.add_argument('--img_size', type=int, default=256, help='Final img squared size')
+parser.add_argument('--crop_size', type=int, default=256, help='Center crop squared size')
 
 parser.add_argument('--normalization', type=str, required=True, help='Data normalization method')
 parser.add_argument('--add_depth', action='store_true', help='If apply image transformation 1 to 3 channels or not')
@@ -41,12 +41,12 @@ parser.add_argument(
 )
 
 # Networks
-parser.add_argument('--seg_net', type=str, default='simple_unet', help='Model name for Segmentator')
-parser.add_argument('--dis_net', type=str, default='n_layers', help='Model name for Discriminator')
-parser.add_argument('--gen_net', type=str, default='resnet_9blocks', help='Model name for Generator')
+parser.add_argument('--seg_net', type=str, default='resnet18_unet_scratch', help='Model name for Segmentator')
+parser.add_argument('--dis_net', type=str, default='n_layers_spectral', help='Model name for Discriminator')
+parser.add_argument('--gen_net', type=str, default='my_resnet_9blocks', help='Model name for Generator')
 
-parser.add_argument('--dis_labels_criterion', type=str, default='mse', help='Loss for vendor labels training')
-parser.add_argument('--dis_realfake_criterion', type=str, default='mse', help='Loss for real fake training')
+parser.add_argument('--dis_labels_criterion', type=str, default='ce', help='Loss for vendor labels training')
+parser.add_argument('--dis_realfake_criterion', type=str, default='bce', help='Loss for real fake training')
 
 parser.add_argument(
     '--rfield_method', type=str, required=True, choices=["random_maps", "random_atomic"],
@@ -69,6 +69,7 @@ parser.add_argument('--gen_checkpoint', type=str, default="", help='If there is 
 
 # Tasks weights
 parser.add_argument('--cycle_coef', type=float, default=0.5)
+parser.add_argument('--vendor_label_coef', type=float, default=1)
 parser.add_argument('--realfake_coef', type=float, default=0.0)
 parser.add_argument('--dis_u_coef', type=float, default=0.0)
 
@@ -76,6 +77,8 @@ parser.add_argument('--plot_examples', action='store_true', help='Whether plot e
 
 parser.add_argument('--patients_percentage', type=float, default=1, help='Train patients percentage (from 0 to 1)')
 parser.add_argument('--rand_histogram_matching', action='store_true', help='Apply random histogram matching')
+
+parser.add_argument('--unique_id', type=str, required=True, help='Unique identifier for current run')
 
 args = parser.parse_args()
 
