@@ -53,7 +53,7 @@ output_dir="$output_dir/normalization_${normalization}/da${data_augmentation}/no
 python3 -u dasegan.py --gpu $gpu --seed $seed  --output_dir "$output_dir" \
 --epochs $epochs --decay_epoch $decay_epoch --lr $lr --batch_size $batch_size --dataset $dataset \
 --data_augmentation $data_augmentation --img_size $img_size --crop_size $crop_size --normalization $normalization \
---add_depth --mask_reshape_method $mask_reshape_method \
+--mask_reshape_method $mask_reshape_method \
 --seg_net $seg_net --dis_net $dis_net --gen_net $gen_net --gen_upsample $gen_upsample \
 --gen_norm_layer $gen_norm_layer --dis_norm_layer $dis_norm_layer --ngf $ngf --ndf $ndf \
 --seg_checkpoint "$seg_checkpoint" --dis_checkpoint "$dis_checkpoint" --gen_checkpoint "$gen_checkpoint" \

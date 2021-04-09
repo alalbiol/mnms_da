@@ -84,6 +84,10 @@ for epoch in range(args.epochs):
     lr = g_optimizer.param_groups[0]['lr']
 
     epoch_gen_loss, epoch_dis_loss = [], []
+
+    epoch_dis_realfake_loss, epoch_dis_xlabel_loss, epoch_dis_ulabel_loss = [], [], []
+    epoch_gen_cycle_loss, epoch_gen_ulabel_loss, epoch_gen_ufake_loss = [], [], []
+
     vol_x_vendor_acc, vol_u_vendor_acc = [], []
     vol_x_realfake_acc, vol_u_realfake_acc = [], []
     vol_x_iou, vol_u_iou = [], []
@@ -127,7 +131,7 @@ for epoch in range(args.epochs):
         random_labels = get_random_labels(vol_x_original_label, AVAILABLE_LABELS)
         random_labels = labels2rfield(
             method=args.rfield_method, shape=vol_vendor_label_u.shape,
-            label_range=(0, len(AVAILABLE_LABELS)+1), labels=random_labels
+            label_range=(0, len(AVAILABLE_LABELS) + 1), labels=random_labels
         ).to(vol_vendor_label_u.device)
 
         vendor_label_loss_u = dis_labels_criterion(vol_vendor_label_u, random_labels) * args.vendor_label_coef
@@ -141,6 +145,9 @@ for epoch in range(args.epochs):
         # --- Total generators losses ---
         gen_loss = cycle_loss + vendor_label_loss_u + fake_label_loss_u
         epoch_gen_loss.append(gen_loss.item())
+        epoch_gen_cycle_loss.append(cycle_loss.item())
+        epoch_gen_ulabel_loss.append(vendor_label_loss_u.item())
+        epoch_gen_ufake_loss.append(0 if fake_label_loss_u == 0 else fake_label_loss_u.item())
 
         #  --- Update generators ---
         gen_loss.backward()
@@ -178,6 +185,9 @@ for epoch in range(args.epochs):
         # Total discriminators losses
         dis_loss = vol_x_label_dis_loss + vol_u_label_dis_loss + real_fake_loss
         epoch_dis_loss.append(dis_loss.item())
+        epoch_dis_xlabel_loss.append(vol_x_label_dis_loss.item())
+        epoch_dis_ulabel_loss.append(vol_u_label_dis_loss.item())
+        epoch_dis_realfake_loss.append(0 if real_fake_loss == 0 else real_fake_loss.item())
 
         # --- Update discriminators ---
         dis_loss.backward()
@@ -212,12 +222,12 @@ for epoch in range(args.epochs):
         if args.realfake_coef > 0:
             vol_x_realfake_acc.append(
                 (torch.sum(
-                    (torch.sigmoid(vol_real_label_x) > 0.5) == torch.ones_like(vol_real_label_x).cuda()
+                    (torch.sigmoid(vol_real_label_x) > 0.5) == torch.ones_like(vol_real_label_x)
                 ) / label_size).item()
             )
             vol_u_realfake_acc.append(
                 (torch.sum(
-                    (torch.sigmoid(vol_fake_label_u) > 0.5) == torch.zeros_like(vol_real_label_x).cuda()
+                    (torch.sigmoid(vol_fake_label_u) > 0.5) == torch.zeros_like(vol_real_label_x)
                 ) / label_size).item()
             )
 
@@ -281,6 +291,16 @@ for epoch in range(args.epochs):
         },
         f'{args.output_dir}/checkpoint.pt'
     )
+
+    # Intermediate losses
+    logging["Discriminator RealFake Loss"] = np.array(epoch_dis_realfake_loss).mean()
+    logging["Discriminator X-VendorLabel Loss"] = np.array(epoch_dis_xlabel_loss).mean()
+    logging["Discriminator U-VendorLabel Loss"] = np.array(epoch_dis_ulabel_loss).mean()
+    logging["Generator Cycle Loss"] = np.array(epoch_gen_cycle_loss).mean()
+    logging["Generator U-VendorLabel Loss"] = np.array(epoch_gen_ulabel_loss).mean()
+    logging["Generator U-Fake Loss"] = np.array(epoch_gen_ufake_loss).mean()
+
+    # Logging
 
     wandb.log(logging)
     wandb.save(f'{args.output_dir}/checkpoint.pt')

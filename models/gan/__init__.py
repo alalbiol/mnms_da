@@ -72,6 +72,6 @@ def define_Dis(input_nc, ndf, netD, n_layers_D=3, norm='batch', gpu_ids=[0], che
 
     if checkpoint != "":
         print("Loaded model from checkpoint: {}".format(checkpoint))
-        model.load_state_dict(torch.load(checkpoint))
+        model.load_state_dict(torch.load(checkpoint)["discriminator"])
 
     return model

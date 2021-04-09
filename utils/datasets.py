@@ -51,6 +51,13 @@ class MMs2DDataset(Dataset):
         self.vendor2label = {"A": 0, "B": 1, "C": 2, "D": 3}
 
         data = pd.read_csv(os.path.join(self.base_dir, "slices_info.csv"))
+
+        if partition == "Training":
+            # Si queremos utilizar el Vendor C en entrenamiento, este no tiene las phases delimitadas
+            # La fase ED suele ser la 0 por lo que la dejamos como está, pero la ES la estimamos como la media
+            mean_ES = int(data.loc[(data["Partition"] == "Training") & (data["ES"] != 0)].ES.mean())
+            data.loc[(data["Partition"] == "Training") & (data["ES"] == 0), "ES"] = mean_ES
+
         if "All" in self.partition:
             # Training and Unlabeled (vendor C) is not labeled!
             data = data.loc[((data['Partition'] == "Training") & (data['Labeled'])) | (data['Partition'] != "Training")]
@@ -85,6 +92,7 @@ class MMs2DDataset(Dataset):
         data = data.reset_index(drop=True)
 
         self.data = data
+        print(data.groupby("Vendor").count()["External code"])
         self.num_vendors = len(data["Vendor"].unique())
         self.data_meta = pd.read_csv(os.path.join(self.base_dir, "volume_info_statistics.csv"))
 
