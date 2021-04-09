@@ -3,7 +3,7 @@
 unique_id=$(uuidgen)
 
 gpu="0,1"
-dataset="mms2d_full_unlabeled_ncl"
+dataset="mms2d_unlabeled_ncl"  # mms2d_unlabeled_ncl - mms2d_full_unlabeled_ncl
 seed=42
 
 seg_net="resnet18_unet_scratch"
@@ -28,8 +28,8 @@ img_size=256
 crop_size=256
 batch_size=16
 
-epochs=80
-decay_epoch=60
+epochs=50
+decay_epoch=35
 
 lr=0.001
 
@@ -40,10 +40,18 @@ mask_reshape_method="padd"
 
 rfield_method="random_maps"  # "random_maps" - "random_atomic"
 
-dis_u_coef=0.0
-realfake_coef=0.2
-cycle_coef=0.5
-vendor_label_coef=0.5
+
+for cycle_coef in 0.1 0.5
+do
+
+for dis_u_coef in 0.5 2.0
+do
+
+for realfake_coef in 0.5 2.0
+do
+
+for vendor_label_coef in 0.5 2.0
+do
 
 model_dir="GENERATOR_${gen_net}_${gen_upsample}_DISCRIMINATOR_${dis_net}_SEGMENTATOR_${seg_net}"
 output_dir="results/$dataset/DASEGAN/$model_dir"
@@ -96,6 +104,13 @@ python3 -u train.py --gpu $gpu --dataset $dataset --model_name $model --img_size
 --scheduler_steps 70 100 --gen_net $gen_net --gen_upsample $gen_upsample --norm_layer $gen_norm_layer --ngf $ngf \
 --gen_checkpoint $gen_checkpoint --unique_id "$unique_id" --evaluate
 
+done
+
+done
+
+done
+
+done
 
 ############################################################
 python tools/notify.py --msg "DASEGAN - Experiments Finished"
