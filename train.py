@@ -68,7 +68,7 @@ val_metrics = MetricsAccumulator(
 full_criterion = [args.criterion]
 full_criterion += ["coral"] if args.coral else ""
 
-wandb.init(project="MnMs Segmentation", name=get_name(args.unique_id), config=args)  # name="experiment1",
+wandb.init(project="MnMs Segmentation", name=get_name(args.unique_id), config=args)
 
 header, defrosted = build_header(class_to_cat, full_criterion, args.metrics, display=True), False
 for current_epoch in range(args.epochs):

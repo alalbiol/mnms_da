@@ -1,9 +1,6 @@
 #!/bin/bash
 
-unique_id=$(uuidgen)
-
 gpu="0,1"
-dataset="mms2d_unlabeled_ncl"  # mms2d_unlabeled_ncl - mms2d_full_unlabeled_ncl
 seed=42
 
 seg_net="resnet18_unet_scratch"
@@ -26,20 +23,13 @@ gen_checkpoint=""
 
 img_size=256
 crop_size=256
-batch_size=16
-
-epochs=50
-decay_epoch=35
-
-lr=0.001
-
-data_augmentation="mms2d"
 
 normalization="negative1_positive1"
 mask_reshape_method="padd"
 
 rfield_method="random_maps"  # "random_maps" - "random_atomic"
 
+problem_type="segmentation"
 
 for cycle_coef in 0.1 0.5
 do
@@ -52,6 +42,20 @@ do
 
 for vendor_label_coef in 0.5 2.0
 do
+
+
+unique_id=$(uuidgen)
+
+# --- GENERATOR TRAINING ---
+
+dataset="mms2d_full_unlabeled_ncl"  # mms2d_unlabeled_ncl - mms2d_full_unlabeled_ncl
+
+epochs=60
+decay_epoch=40
+lr=0.001
+batch_size=16
+
+data_augmentation="mms2d"
 
 model_dir="GENERATOR_${gen_net}_${gen_upsample}_DISCRIMINATOR_${dis_net}_SEGMENTATOR_${seg_net}"
 output_dir="results/$dataset/DASEGAN/$model_dir"
@@ -71,9 +75,9 @@ python3 -u dasegan.py --gpu $gpu --seed $seed  --output_dir "$output_dir" \
 --dis_labels_criterion $dis_labels_criterion --dis_realfake_criterion $dis_realfake_criterion
 
 
-gpu="0,1"
+# --- SEGMENTATION TRAINING WITH GENERATOR ---
+
 dataset="mms2d"
-problem_type="segmentation"
 
 epochs=170
 swa_start=130
@@ -84,17 +88,16 @@ model="resnet18_unet_scratch"
 scheduler="steps"
 lr=0.001
 swa_lr=0.00256
+batch_size=4
 optimizer="adam"
 
 data_augmentation="mms2d"
-
-normalization="negative1_positive1"
-mask_reshape_method="padd"
 
 criterion="bce_dice"
 weights_criterion="0.4, 0.5, 0.1"
 
 gen_checkpoint="$output_dir/checkpoint.pt"
+output_dir="$output_dir/SEGMENTATION"
 
 python3 -u train.py --gpu $gpu --dataset $dataset --model_name $model --img_size $img_size --crop_size $crop_size \
 --epochs $epochs --swa_start $swa_start --batch_size $batch_size --defrost_epoch $defrost_epoch \
@@ -102,7 +105,7 @@ python3 -u train.py --gpu $gpu --dataset $dataset --model_name $model --img_size
 --normalization $normalization --weights_criterion "$weights_criterion" --data_augmentation $data_augmentation \
 --output_dir "$output_dir" --metrics iou dice --problem_type $problem_type --mask_reshape_method $mask_reshape_method \
 --scheduler_steps 70 100 --gen_net $gen_net --gen_upsample $gen_upsample --norm_layer $gen_norm_layer --ngf $ngf \
---gen_checkpoint $gen_checkpoint --unique_id "$unique_id" --evaluate
+--no_dropout --gen_checkpoint $gen_checkpoint --unique_id "$unique_id" --evaluate
 
 done
 
