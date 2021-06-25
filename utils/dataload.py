@@ -81,7 +81,7 @@ def apply_normalization(image, normalization_type, mean=None, std=None, image_mi
         return image
     elif normalization_type == "negative1_positive1":
         # https://stats.stackexchange.com/questions/178626/how-to-normalize-data-between-1-and-1
-        image = 2 * ( (image - image.min()) / (image.max()-image.min()) ) - 1
+        image = 2 * ((image - image.min()) / (image.max() - image.min())) - 1
         return image
     elif normalization_type == "standardize":
         if mean is None:

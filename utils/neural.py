@@ -315,6 +315,8 @@ def train_step(
         loss.backward()
 
         if coral:
+            # coral_loader contiene una lista de loaders (1 por vendor)
+            # donde cada loader carga volúmenes de su vendor asociado
             paired_loaders = np.random.choice(coral_loader, 2, replace=False)  # replace=False to non-repetitive choice
 
             # torch.Size([1, slices, 3, 224, 224]); squeeze -> num slices as batch
@@ -323,25 +325,34 @@ def train_step(
             batch_1 = next(iter(paired_loaders[1]))
             batch_1_vol = batch_1["volume"].squeeze()
 
+            # Se juntan los volumenes en un solo batch para agilizar la inferencia
             batch = torch.cat((batch_0_vol, batch_1_vol), 0)
 
+            # Existe un trabajo paralelo donde se utilizan GANs para normalizar las imágenes. Es posible
+            # pasar el generador de topología GAN para 'normalizar' el batch previamente
             if generator is not None:
                 batch = generator(batch)
 
+            # Se realiza la predicción de los volúmenes
             pred = model(batch)
 
+            # Se separan los volúmenes juntados previamente
             pred_0 = pred[:len(batch_0_vol)]
             pred_0_flat = pred_0.permute(0, 2, 3, 1).contiguous().view(-1, 4)
 
             pred_1 = pred[len(batch_0_vol):]
             pred_1_flat = pred_1.permute(0, 2, 3, 1).contiguous().view(-1, 4)
 
+            # Se calcula el CORAL loss para los volúmenes inferidos
             c_loss = coral_loss(pred_0_flat, pred_1_flat) * coral_weight
             coral_global += c_loss.item()
 
             num_vols = (1 if batch_0["labeled_info"][0] == "Labeled" else 0) + \
                        (1 if batch_1["labeled_info"][0] == "Labeled" else 0)
 
+            # Por último, aprovechamos las predicciones sobre los volúmenes comprobando si contamos con la
+            # máscara de estos (recordar que podemos estar emparejando volúmenes unlabeled), para si es posible
+            # utilizar su ground truth junto al loss de la tarea principal (típicamente cross entropy)
             if batch_0["labeled_info"][0] == "Labeled":
                 batch_0_label = batch_0["label"].squeeze().unsqueeze(1)  # [1, 1, s, h, w] -> [s, 1, h, w]
                 task_vol0_loss = calculate_loss(

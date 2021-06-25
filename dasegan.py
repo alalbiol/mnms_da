@@ -68,7 +68,7 @@ d_lr_scheduler = torch.optim.lr_scheduler.LambdaLR(
 vendors_samples = None
 if args.plot_examples:
     print("Generating samples to plot...")
-    vendors_samples = get_vendors_samples(args.normalization, add_depth=args.add_depth)
+    vendors_samples = get_vendors_samples(args.normalization, add_depth=args.add_depth, num_test_samples=10)
 
 wandb.init(project="MnMs DASEGAN", name=get_name(args.unique_id), config=args)  # name="experiment1",
 
@@ -115,8 +115,8 @@ for epoch in range(args.epochs):
         vol_u = generator(vol_x)
 
         pred_x = segmentator(vol_x)
-
         pred_u = segmentator(vol_u)
+
         if args.use_original_mask:
             for mask_index, mask in enumerate(inestable_label):
                 if mask is not None:

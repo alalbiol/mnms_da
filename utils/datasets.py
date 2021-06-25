@@ -409,7 +409,7 @@ class MMsSubmissionDataset(Dataset):
     """
 
     def __init__(self, transform, img_transform, add_depth=False, normalization="standardize",
-                 data_relative_path=""):
+                 data_relative_path="../"):
         """
         :param transform: (list) List of albumentations applied to image and mask
         :param img_transform: (list) List of albumentations applied to image only

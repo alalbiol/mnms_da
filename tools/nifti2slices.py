@@ -41,18 +41,18 @@ for subdir, dirs, files in os.walk(data_path):
         if entry.endswith((".nii", ".nii.gz")):
             all_nifti_paths.append(entry)
 
-for nifit_path in tqdm(all_nifti_paths, desc="Remaining Files"):
-    nifti_volume = load_nii(nifit_path)[0]
+for nifti_path in tqdm(all_nifti_paths, desc="Remaining Files"):
+    nifti_volume = load_nii(nifti_path)[0]
     dims = nifti_volume.shape  # h, w, slices, *phases*
-    extension_length = 4 if nifit_path.endswith(".nii") else 7
+    extension_length = 4 if nifti_path.endswith(".nii") else 7
     if len(dims) == 3:  # not phases, volume for specific phase
         for s in range(dims[2]):  # slices
             current_slice = nifti_volume[..., s]
-            current_slice_path = f"{nifit_path[:-extension_length]}_slice{s}.npy"
+            current_slice_path = f"{nifti_path[:-extension_length]}_slice{s}.npy"
             np.save(current_slice_path, current_slice)
     else:
         for s in range(dims[2]):  # slices
             for p in range(dims[3]):  # phases
                 current_slice = nifti_volume[..., s, p]
-                current_slice_path = f"{nifit_path[:-extension_length]}_slice{s}_phase{p}.npy"
+                current_slice_path = f"{nifti_path[:-extension_length]}_slice{s}_phase{p}.npy"
                 np.save(current_slice_path, current_slice)

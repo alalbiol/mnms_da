@@ -1,5 +1,5 @@
 import os
-from utils.general import dict2df, convert_multiclass_mask, reshape_masks, plot_save_pred
+from utils.general import convert_multiclass_mask, reshape_masks, plot_save_pred
 import numpy as np
 import torch
 import monai
@@ -43,7 +43,7 @@ class MetricsAccumulator:
 
         self.include_background = include_background
         self.metric_list = metric_list
-        self.num_classes = (num_classes-1) if num_classes > 1 and not include_background else num_classes
+        self.num_classes = (num_classes - 1) if num_classes > 1 and not include_background else num_classes
         self.metric_methods_args = {}
         self.metrics_helpers = {}
         self.metric_methods = self.__metrics_init()
@@ -230,3 +230,47 @@ def dice_coef(y_true, y_pred):
     intersection = np.sum(y_true * y_pred, axis=None)
     summation = np.sum(y_true, axis=None) + np.sum(y_pred, axis=None)
     return (2.0 * intersection + SMOOTH) / (summation + SMOOTH)
+
+
+def mnms_bootstrapping(
+        df, vendor=None, centre=None, metric="Dice LV", n_bootstraps=2000,
+        get_scores=False, seed=2021
+):
+    np.random.seed(seed)
+
+    if vendor is not None:
+        df_scores = df.loc[df["Vendor"] == vendor]
+    elif centre is not None:
+        df_scores = df.loc[df["Centre"] == centre]
+
+    bootstrapped_scores = []
+
+    for i in range(n_bootstraps):
+        sampled_df = df_scores.sample(n=len(df_scores), replace=True)
+        # replace = Allow or disallow sampling of the same row more than once.
+        dice_lv_score = sampled_df[metric].mean()
+        bootstrapped_scores.append(dice_lv_score)
+
+    sorted_scores = np.array(bootstrapped_scores)
+
+    if get_scores:
+        return sorted_scores
+
+    sorted_scores.sort()
+
+    # 90% c.i.
+    # confidence_lower = sorted_scores[int(0.05 * len(sorted_scores))]
+    # confidence_upper = sorted_scores[int(0.95 * len(sorted_scores))]
+
+    # 95% c.i.
+    confidence_lower = sorted_scores[int(0.025 * len(sorted_scores))]
+    confidence_upper = sorted_scores[int(0.975 * len(sorted_scores))]
+
+    confidence_var = np.var(sorted_scores)
+    confidence_mean = np.mean(sorted_scores)
+
+    return confidence_lower, confidence_upper, confidence_var, confidence_mean
+
+
+def z_score(var_a, var_b, mean_a, mean_b):
+    return (mean_a - mean_b) / ((var_a + var_b) ** .5)
