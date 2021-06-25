@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e74aa284-0ca1-4a3d-b39d-f37e6389a162" name="Default Changelist" comment="">
+    <list default="true" id="e74aa284-0ca1-4a3d-b39d-f37e6389a162" name="Default Changelist" comment="fix running errors">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/mnms_da.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/mnms_da.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dasegan.py" beforeDir="false" afterPath="$PROJECT_DIR$/dasegan.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/dasegan_v1.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/dasegan_v1.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/mms2d_acdc172d.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/mms2d_acdc172d.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tools/metrics_mnms.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/metrics_mnms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/dasegan_arguments.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/dasegan_arguments.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/nifti2slices.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/nifti2slices.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/dataload.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/dataload.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/datasets.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/gans.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/gans.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/mnms.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/mnms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/metrics.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/metrics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/neural.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/neural.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,14 +60,14 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/models/gan" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/scripts" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/scripts" />
       <recent name="$PROJECT_DIR$/models/gan" />
       <recent name="$PROJECT_DIR$/utils" />
-      <recent name="$PROJECT_DIR$/scripts" />
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -158,28 +161,23 @@
       <workItem from="1617720873137" duration="2914000" />
       <workItem from="1617723824188" duration="20000" />
       <workItem from="1617775087772" duration="583000" />
-      <workItem from="1617775805133" duration="2980000" />
-    </task>
-    <task id="LOCAL-00001" summary="fix">
-      <created>1607432585436</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1607432585436</updated>
-    </task>
-    <task id="LOCAL-00002" summary="clean">
-      <created>1607450643805</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1607450643805</updated>
-    </task>
-    <task id="LOCAL-00003" summary="notify when finish">
-      <created>1607498626099</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1607498626099</updated>
+      <workItem from="1617775805133" duration="3567000" />
+      <workItem from="1617789293564" duration="303000" />
+      <workItem from="1617789881609" duration="390000" />
+      <workItem from="1617892772441" duration="4179000" />
+      <workItem from="1617904298083" duration="270000" />
+      <workItem from="1617912736965" duration="666000" />
+      <workItem from="1617951030067" duration="9930000" />
+      <workItem from="1617967301891" duration="241000" />
+      <workItem from="1617975559536" duration="1482000" />
+      <workItem from="1618163501177" duration="1466000" />
+      <workItem from="1618330003362" duration="1282000" />
+      <workItem from="1618555847141" duration="1971000" />
+      <workItem from="1623219224907" duration="2464000" />
+      <workItem from="1623431670027" duration="1133000" />
+      <workItem from="1623683031491" duration="2257000" />
+      <workItem from="1623853671923" duration="1235000" />
+      <workItem from="1623925514842" duration="10358000" />
     </task>
     <task id="LOCAL-00004" summary="volume dataset, histogram matching data augmentation">
       <created>1608215230027</created>
@@ -461,7 +459,70 @@
       <option name="project" value="LOCAL" />
       <updated>1617775868726</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary="new rfields and save all df">
+      <created>1617788519048</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1617788519048</updated>
+    </task>
+    <task id="LOCAL-00045" summary="refactor">
+      <created>1617788916147</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1617788916147</updated>
+    </task>
+    <task id="LOCAL-00046" summary="naming runs">
+      <created>1617789579146</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1617789579146</updated>
+    </task>
+    <task id="LOCAL-00047" summary="refactor">
+      <created>1617790260497</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1617790260497</updated>
+    </task>
+    <task id="LOCAL-00048" summary="refactor">
+      <created>1617904421422</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1617904421422</updated>
+    </task>
+    <task id="LOCAL-00049" summary="fix bugs">
+      <created>1617913331010</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1617913331010</updated>
+    </task>
+    <task id="LOCAL-00050" summary="more logging and c train es info">
+      <created>1617966493788</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1617966493789</updated>
+    </task>
+    <task id="LOCAL-00051" summary="hyper search">
+      <created>1617967524320</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1617967524321</updated>
+    </task>
+    <task id="LOCAL-00052" summary="fix running errors">
+      <created>1618164959642</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1618164959643</updated>
+    </task>
+    <option name="localTasksCounter" value="53" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -480,12 +541,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix" />
-    <MESSAGE value="interpolation and deconvolution arg" />
-    <MESSAGE value="use generator dasegan" />
-    <MESSAGE value="gan selector" />
-    <MESSAGE value="kernel printing" />
-    <MESSAGE value="new segmentator and original labels" />
     <MESSAGE value="real fake option coef" />
     <MESSAGE value="spectral norm discriminator" />
     <MESSAGE value="added metrics dis and gen" />
@@ -498,47 +553,58 @@
     <MESSAGE value="fix typo" />
     <MESSAGE value="fix number of classes" />
     <MESSAGE value="wandb integration" />
-    <MESSAGE value="refactor" />
     <MESSAGE value="fix wandb logging" />
     <MESSAGE value="fix metrics and one channel" />
     <MESSAGE value="fix naming" />
     <MESSAGE value="fix paths" />
     <MESSAGE value="remove unused" />
     <MESSAGE value="fix hyper" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix hyper" />
+    <MESSAGE value="new rfields and save all df" />
+    <MESSAGE value="naming runs" />
+    <MESSAGE value="refactor" />
+    <MESSAGE value="fix bugs" />
+    <MESSAGE value="more logging and c train es info" />
+    <MESSAGE value="hyper search" />
+    <MESSAGE value="fix running errors" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix running errors" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/datasets.py</url>
-          <line>564</line>
-          <option name="timeStamp" value="37" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/utils/datasets.py</url>
-          <line>568</line>
-          <option name="timeStamp" value="38" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/utils/datasets.py</url>
-          <line>381</line>
+          <line>389</line>
           <option name="timeStamp" value="39" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/datasets.py</url>
-          <line>254</line>
+          <line>262</line>
           <option name="timeStamp" value="40" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/datasets.py</url>
-          <line>255</line>
+          <line>263</line>
           <option name="timeStamp" value="41" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/dasegan.py</url>
+          <line>199</line>
+          <option name="timeStamp" value="43" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/models/gan/__init__.py</url>
+          <line>12</line>
+          <option name="timeStamp" value="51" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/models/gan/__init__.py</url>
+          <line>44</line>
+          <option name="timeStamp" value="52" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/mnms_da$.coverage" NAME=" Coverage Results" MODIFIED="1617721995502" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/mnms_da$.coverage" NAME=" Coverage Results" MODIFIED="1618164700217" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>

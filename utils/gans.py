@@ -77,7 +77,6 @@ def plot_save_generated(
         original_img, original_img_mask, original_img_pred_mask, generated_img, generated_img_mask,
         save_dir, img_id
 ):
-
     os.makedirs(save_dir, exist_ok=True)
     fig, (ax1, ax2, ax3) = plt.subplots(3, 2, figsize=(14, 6))
     plt.subplots_adjust(wspace=0.005, hspace=0.2, right=0.5)
@@ -118,55 +117,33 @@ def plot_save_generated(
 def plot_save_generated_vendor_list(
         transformed_samples, pred_path, rows=10, cols=4
 ):
-    a_transformed, b_transformed, c_transformed, d_transformed = transformed_samples
     fig = plt.figure(figsize=(cols + 1, rows + 1))
 
     gs1 = gridspec.GridSpec(rows, cols, )
     gs1.update(wspace=0.02, hspace=0.05)  # set the spacing between axes.
-    set_title = {"A": True, "B": True, "C": True, "D": True}
+    set_title = {0: "A", 1: "B", 2: "C", 3: "D"}
 
-    curr_vendor = 0  # 0 -> A, 1 -> B, 2 -> C, 3 -> D
-    for i in range(rows*cols):
-        # i = i + 1 # grid spec indexes from 0
-        ax = plt.subplot(gs1[i])
-        ax.set_axis_off()
-        ax.set_xticklabels([])
-        ax.set_yticklabels([])
-        ax.set_aspect('auto')
+    img_counter, current_img = 0, 0
+    for r in range(rows):
+        for c in range(4):
+            ax = plt.subplot(gs1[img_counter])
+            ax.set_axis_off()
+            ax.set_xticklabels([])
+            ax.set_yticklabels([])
+            ax.set_aspect('auto')
+            if r == 0:
+                ax.set_title(f"Vendor {set_title[img_counter]}")
+            img = transformed_samples[c][current_img]
+            ax.imshow(img, cmap="gray")
+            img_counter += 1
+        current_img += 1
 
-        if curr_vendor == 0:
-            if set_title["A"]:
-                ax.set_title("Vendor A")
-                set_title["A"] = False
-            img = a_transformed[i]
-        elif curr_vendor == 1:
-            if set_title["B"]:
-                ax.set_title("Vendor B")
-                set_title["B"] = False
-            img = b_transformed[i]
-        elif curr_vendor == 2:
-            if set_title["C"]:
-                ax.set_title("Vendor C")
-                set_title["C"] = False
-            img = c_transformed[i]
-        elif curr_vendor == 3:
-            if set_title["D"]:
-                ax.set_title("Vendor D")
-                set_title["D"] = False
-            img = d_transformed[i]
-        else:
-            assert False, "Unknown plotting error. Current vendor > 3?!"
-        ax.imshow(img, cmap="gray")
-
-        curr_vendor += 1
-        curr_vendor = curr_vendor if curr_vendor <= 3 else 0
-
-    fig.savefig(pred_path, dpi=200, bbox_inches='tight')
+    fig.savefig(pred_path, dpi=250, bbox_inches='tight')
     plt.close()
     return fig
 
 
-def plot_save_kernels(kernel, save_dir,  path_info="", by_kernel=True):
+def plot_save_kernels(kernel, save_dir, path_info="", by_kernel=True):
     """
     kernel with shape: (batch, channels, height, width)
     """
@@ -180,7 +157,6 @@ def plot_save_kernels(kernel, save_dir,  path_info="", by_kernel=True):
         if by_kernel:
 
             for kernel_index in range(kernel.shape[1]):
-
                 plt.figure(figsize=(14, 6))
                 plt.axis('off')
                 plt.imshow(kernel[sample, kernel_index, ...], cmap="gray")
@@ -214,10 +190,7 @@ def plot_save_kernels(kernel, save_dir,  path_info="", by_kernel=True):
             plt.close()
 
 
-def get_vendors_samples(normalization, add_depth=False):
-    rows, cols = 10, 4
-    num_test_samples = rows * cols
-
+def get_vendors_samples(normalization, add_depth=False, num_test_samples=10):
     img_list_a = get_mnms_arrays(
         "A", normalization=normalization, add_depth=add_depth,
     )
