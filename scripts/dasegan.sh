@@ -8,7 +8,7 @@ dataset="mms2d_full_unlabeled_ncl"  # mms2d_unlabeled_ncl - mms2d_full_unlabeled
 epochs=60
 decay_epoch=40
 lr=0.001
-batch_size=8
+batch_size=16
 
 data_augmentation="mms2d"
 
@@ -45,16 +45,16 @@ task_weights_criterion="0.4, 0.5, 0.1"
 for task_loss_u_coef in 0.75
 do
 
-for cycle_coef in 0.1 0.5
+for cycle_coef in 0.75
 do
 
-for dis_u_coef in 0.5 2.0
+for dis_u_coef in 0.25
 do
 
-for realfake_coef in 0.5 2.0
+for realfake_coef in 5.0
 do
 
-for vendor_label_coef in 0.5 2.0
+for vendor_label_coef in 0.5
 do
 
 
