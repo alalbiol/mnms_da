@@ -42,7 +42,7 @@ rfield_method="random_maps"  # "random_maps" - "random_atomic"
 task_criterion="bce_dice"
 task_weights_criterion="0.4, 0.5, 0.1"
 
-for task_loss_u_coef in 0.75
+for task_loss_u_coef in 0.9
 do
 
 for cycle_coef in 0.75
