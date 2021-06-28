@@ -1,5 +1,5 @@
 import random
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, WeightedRandomSampler
 import torch
 import os
 import numpy as np
@@ -121,7 +121,7 @@ class MMs2DDataset(Dataset):
 
         """
         # We have to modify "original_mask" as has different shapes
-        not_stack_items = ["original_mask", "original_img", "img_id", "vendor_label", "inestable_label"]
+        not_stack_items = ["original_mask", "original_img", "img_id", "vendor_label", "inestable_mask"]
         batch_keys = list(batch[0].keys())
         res = {bkey: [] for bkey in batch_keys}
         for belement in batch:
@@ -224,7 +224,7 @@ class MMs2DDataset(Dataset):
         return {
             "img_id": img_id, "image": image, "label": mask,
             "original_img": original_image, "original_mask": original_mask,
-            "vendor_label": self.vendor2label[c_vendor], "inestable_label": mask
+            "vendor_label": self.vendor2label[c_vendor], "inestable_mask": mask
         }
 
 
@@ -702,7 +702,7 @@ class ACDC172Dataset(Dataset):
         }
 
 
-def dataset_selector(train_aug, train_aug_img, val_aug, args, is_test=False):
+def dataset_selector(train_aug, train_aug_img, val_aug, args, is_test=False, sampler="", wprob=.7):
     train_datasets, val_datasets = [], []
     if "mms2d" in args.dataset:
 
@@ -772,10 +772,26 @@ def dataset_selector(train_aug, train_aug_img, val_aug, args, is_test=False):
         assert False, f"Unknown dataset '{args.dataset}'"
 
     elif len(train_datasets) == 1 and len(val_datasets) == 1:
-        train_loader = DataLoader(
-            train_datasets[0], batch_size=args.batch_size, pin_memory=True,
-            shuffle=True, collate_fn=train_datasets[0].custom_collate
-        )
+
+        if sampler == "weighted_sampler":
+            dataset_labeled_info = np.array(train_datasets[0].data["Labeled"].astype(np.int32))
+            weights = np.bincount(dataset_labeled_info)  # occurences per class
+            weights[weights == 0] = 1  # replace empty bins with 1
+            weights = 1 / weights  # number of targets per class
+            weights /= weights.sum()  # normalize
+            for i, w in enumerate(weights):
+                dataset_labeled_info = np.where(dataset_labeled_info == i, w, dataset_labeled_info)
+            wsampler = WeightedRandomSampler(dataset_labeled_info, len(dataset_labeled_info), replacement=True)
+
+            train_loader = DataLoader(
+                train_datasets[0], batch_size=args.batch_size, pin_memory=True,
+                collate_fn=train_datasets[0].custom_collate, sampler=wsampler
+            )
+        else:
+            train_loader = DataLoader(
+                train_datasets[0], batch_size=args.batch_size, pin_memory=True,
+                collate_fn=train_datasets[0].custom_collate, shuffle=True
+            )
         val_loader = DataLoader(
             val_datasets[0], batch_size=args.batch_size, shuffle=False, pin_memory=True,
             drop_last=False, collate_fn=val_datasets[0].custom_collate
@@ -820,8 +836,8 @@ def dataset_selector(train_aug, train_aug_img, val_aug, args, is_test=False):
 
 
 def get_mnms_arrays(
-    vendor, normalization, partition="Training", data_mod="", verbose=False,
-    add_depth=False, batch_size=100, img_size=256, crop_size=256
+        vendor, normalization, partition="Training", data_mod="", verbose=False,
+        add_depth=False, batch_size=100, img_size=256, crop_size=256
 ):
     """
     Return tensors torch.Size([batch, channels, img_size, crop_size])

@@ -134,7 +134,6 @@ def binarize_volume_prediction(volume_pred, original_shape=None, mask_reshape_me
 
 
 def plot_save_pred(original_img, original_mask, pred_mask, save_dir, img_id):
-
     os.makedirs(save_dir, exist_ok=True)
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(14, 6))
 
@@ -199,3 +198,6 @@ def plot_save_pred_volume(img_volume, pred_mask_volume, save_dir, img_id):
         plt.savefig(pred_filename, dpi=200, pad_inches=0.2, bbox_inches='tight')
         plt.close()
 
+
+def linear_rampup(total_epochs, current_epoch, final_value):
+    return (current_epoch / total_epochs) * final_value

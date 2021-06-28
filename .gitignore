@@ -145,3 +145,6 @@ DASEGAN_EXPERIMENTS/*
 
 # Nifti files
 *.nii.gz
+
+# weights and biases
+wandb/

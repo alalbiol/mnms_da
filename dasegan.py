@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
+from itertools import chain
 
 # ---- My utils ----
 from models import model_selector
@@ -13,8 +14,6 @@ from utils.gans import *
 
 import torch.nn.functional as F
 
-import os
-
 os.environ["WANDB_SILENT"] = "true"
 import wandb
 
@@ -26,8 +25,9 @@ train_aug, train_aug_img, val_aug = data_augmentation_selector(
     args.data_augmentation, args.img_size, args.crop_size, args.mask_reshape_method
 )
 vol_loader, val_vols, num_classes, class_to_cat, include_background = dataset_selector(
-    train_aug, train_aug_img, val_aug, args
+    train_aug, train_aug_img, val_aug, args, sampler="weighted_sampler"
 )
+
 print(f"Number of segmentator classes: {num_classes}")
 AVAILABLE_LABELS = np.arange(0, vol_loader.dataset.num_vendors).tolist()
 print(f"Number of vendors: {AVAILABLE_LABELS}")
@@ -52,10 +52,13 @@ segmentator = model_selector(
 dis_labels_criterion = get_loss(args.dis_labels_criterion)
 dis_realfake_criterion = get_loss(args.dis_realfake_criterion)
 identity_mask_criterion = nn.L1Loss()
+task_criterion, task_weights_criterion, task_multiclass_criterion = get_criterion(
+    args.task_criterion, args.task_weights_criterion
+)
 
 # Define Optimizers
 #####################################################
-g_optimizer = torch.optim.Adam(generator.parameters(), lr=args.lr, betas=(0.5, 0.999))
+g_optimizer = torch.optim.Adam(chain(segmentator.parameters(), generator.parameters()), lr=args.lr, betas=(0.5, 0.999))
 d_optimizer = torch.optim.Adam(discriminator.parameters(), lr=args.lr, betas=(0.5, 0.999))
 
 g_lr_scheduler = torch.optim.lr_scheduler.LambdaLR(
@@ -70,11 +73,9 @@ if args.plot_examples:
     print("Generating samples to plot...")
     vendors_samples = get_vendors_samples(args.normalization, add_depth=args.add_depth, num_test_samples=10)
 
-wandb.init(project="MnMs DASEGAN", name=get_name(args.unique_id), config=args)  # name="experiment1",
+wandb.init(project="MnMs DASEGAN - Exp2", name=get_name(args.unique_id), config=args)  # name="experiment1",
 
 print("\n\n --- START TRAINING --\n")
-segmentator.eval()
-set_grad([segmentator], False)
 
 # wandb.watch(generator)
 # wandb.watch(discriminator)
@@ -87,6 +88,7 @@ for epoch in range(args.epochs):
 
     epoch_dis_realfake_loss, epoch_dis_xlabel_loss, epoch_dis_ulabel_loss = [], [], []
     epoch_gen_cycle_loss, epoch_gen_ulabel_loss, epoch_gen_ufake_loss = [], [], []
+    epoch_seg_xtask_loss, epoch_seg_utask_loss = [], []
 
     vol_x_vendor_acc, vol_u_vendor_acc = [], []
     vol_x_realfake_acc, vol_u_realfake_acc = [], []
@@ -97,18 +99,20 @@ for epoch in range(args.epochs):
         vol_x = batch["image"].cuda()
         # Como utilizamos datos que no tienen porque estar etiquetados, recibimos una lista de labels
         # donde puede haber o no (None). Ejemplo: [None, tensor, None, None]
-        inestable_label = batch["inestable_label"]
+        inestable_mask = batch["inestable_mask"]
         vol_x_original_label = torch.from_numpy(np.array(batch["vendor_label"])).cuda()
         img_id = batch["img_id"]
 
         generator.train()
         discriminator.train()
+        segmentator.train()
 
-        #####################################################
-        # -------------- Generator Computations -------------
-        #####################################################
+        ###################################################################
+        # -------------- Generator & Segmentator Computations -------------
+        ###################################################################
 
         set_grad([discriminator], False)
+        set_grad([segmentator, generator], True)
         g_optimizer.zero_grad()
 
         # -- Forward pass through generator --
@@ -118,9 +122,29 @@ for epoch in range(args.epochs):
         pred_u = segmentator(vol_u)
 
         if args.use_original_mask:
-            for mask_index, mask in enumerate(inestable_label):
+            for mask_index, mask in enumerate(inestable_mask):
                 if mask is not None:
                     pred_x[mask_index] = F.one_hot(mask.squeeze().to(torch.int64), 4).permute(2, 0, 1).cuda()
+
+        # --- Task Loss ---
+        if not all(m is None for m in inestable_mask):
+            original_masks = torch.vstack([imask for imask in inestable_mask if imask is not None]).to(pred_x.device)
+            masked_indices = torch.tensor([index for index, imask in enumerate(inestable_mask) if imask is not None])
+            masked_indices = masked_indices.to(pred_x.device)
+
+            task_loss_x = calculate_loss(
+                original_masks, torch.index_select(pred_x, 0, masked_indices),
+                task_criterion, task_weights_criterion, task_multiclass_criterion, num_classes
+            )
+
+            task_loss_u = calculate_loss(
+                original_masks, torch.index_select(pred_u, 0, masked_indices),
+                task_criterion, task_weights_criterion, task_multiclass_criterion, num_classes
+            ) * linear_rampup(args.epochs, epoch+1, args.task_loss_u_coef)
+
+            task_loss = task_loss_x + task_loss_u
+        else:
+            task_loss = task_loss_x = task_loss_u = torch.tensor(0).to(pred_x.device)
 
         # --- Identity/Cycle losses ---
         cycle_loss = identity_mask_criterion(pred_x, pred_u) * args.cycle_coef
@@ -143,10 +167,12 @@ for epoch in range(args.epochs):
             fake_label_loss_u = dis_realfake_criterion(vol_fake_label_u, target_real) * args.realfake_coef
 
         # --- Total generators losses ---
-        gen_loss = cycle_loss + vendor_label_loss_u + fake_label_loss_u
+        gen_loss = cycle_loss + vendor_label_loss_u + fake_label_loss_u + task_loss
         epoch_gen_loss.append(gen_loss.item())
         epoch_gen_cycle_loss.append(cycle_loss.item())
         epoch_gen_ulabel_loss.append(vendor_label_loss_u.item())
+        epoch_seg_xtask_loss.append(task_loss_x.item())
+        epoch_seg_utask_loss.append(task_loss_u.item())
         epoch_gen_ufake_loss.append(0 if fake_label_loss_u == 0 else fake_label_loss_u.item())
 
         #  --- Update generators ---
@@ -158,6 +184,7 @@ for epoch in range(args.epochs):
         #####################################################
 
         set_grad([discriminator], True)
+        set_grad([segmentator, generator], False)
         d_optimizer.zero_grad()
 
         # --- Forward pass through discriminators ---
@@ -232,8 +259,10 @@ for epoch in range(args.epochs):
             )
 
         # --- Segmentator metrics ---
+        set_grad([segmentator], False)
+        segmentator.eval()
         pred_x = segmentator(vol_x)
-        for mask_index, mask in enumerate(inestable_label):
+        for mask_index, mask in enumerate(inestable_mask):
             if mask is not None:
                 vol_x_iou.append(evaluate_segmentation(pred_x.detach()[mask_index], mask.squeeze()))
                 vol_u_iou.append(evaluate_segmentation(pred_u.detach()[mask_index], mask.squeeze()))
@@ -283,7 +312,7 @@ for epoch in range(args.epochs):
     torch.save(
         {
             'epoch': epoch + 1,
-            # 'segmentator': segmentator.state_dict(),
+            'segmentator': segmentator.state_dict(),
             'discriminator': discriminator.state_dict(),
             'generator': generator.state_dict(),
             'd_optimizer': d_optimizer.state_dict(),
@@ -296,6 +325,8 @@ for epoch in range(args.epochs):
     logging["Discriminator RealFake Loss"] = np.array(epoch_dis_realfake_loss).mean()
     logging["Discriminator X-VendorLabel Loss"] = np.array(epoch_dis_xlabel_loss).mean()
     logging["Discriminator U-VendorLabel Loss"] = np.array(epoch_dis_ulabel_loss).mean()
+    logging["Segmentator X-Task Loss"] = np.array(epoch_seg_xtask_loss).mean()
+    logging["Segmentator U-Task Loss"] = np.array(epoch_seg_utask_loss).mean()
     logging["Generator Cycle Loss"] = np.array(epoch_gen_cycle_loss).mean()
     logging["Generator U-VendorLabel Loss"] = np.array(epoch_gen_ulabel_loss).mean()
     logging["Generator U-Fake Loss"] = np.array(epoch_gen_ufake_loss).mean()

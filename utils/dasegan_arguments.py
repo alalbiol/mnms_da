@@ -47,6 +47,8 @@ parser.add_argument('--gen_net', type=str, default='my_resnet_9blocks', help='Mo
 
 parser.add_argument('--dis_labels_criterion', type=str, default='ce', help='Loss for vendor labels training')
 parser.add_argument('--dis_realfake_criterion', type=str, default='bce', help='Loss for real fake training')
+parser.add_argument('--task_criterion', type=str, default='bce', help='Criterion for training')
+parser.add_argument('--task_weights_criterion', type=str, default='default', help='Weights for each subcriterion')
 
 parser.add_argument(
     '--rfield_method', type=str, required=True, choices=["random_maps", "random_atomic"],
@@ -72,6 +74,7 @@ parser.add_argument('--cycle_coef', type=float, default=0.5)
 parser.add_argument('--vendor_label_coef', type=float, default=1)
 parser.add_argument('--realfake_coef', type=float, default=0.0)
 parser.add_argument('--dis_u_coef', type=float, default=0.0)
+parser.add_argument('--task_loss_u_coef', type=float, default=0.1)
 
 parser.add_argument('--plot_examples', action='store_true', help='Whether plot examples of transformed volumes')
 
