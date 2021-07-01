@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-from itertools import chain
+import wandb
 
 # ---- My utils ----
 from models import model_selector
@@ -11,8 +11,6 @@ from utils.datasets import dataset_selector
 from utils.logging import get_name
 from utils.neural import *
 from utils.gans import *
-
-import torch.nn.functional as F
 
 os.environ["WANDB_SILENT"] = "true"
 set_seed(args.seed)
