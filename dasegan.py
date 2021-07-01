@@ -15,11 +15,9 @@ from utils.gans import *
 import torch.nn.functional as F
 
 os.environ["WANDB_SILENT"] = "true"
-import wandb
-
 set_seed(args.seed)
 
-# Define Dataloaders
+# Define Dataloader
 #####################################################
 train_aug, train_aug_img, val_aug = data_augmentation_selector(
     args.data_augmentation, args.img_size, args.crop_size, args.mask_reshape_method
@@ -29,7 +27,7 @@ vol_loader, val_vols, num_classes, class_to_cat, include_background = dataset_se
 )
 
 print(f"Number of segmentator classes: {num_classes}")
-AVAILABLE_LABELS = np.arange(0, vol_loader.dataset.num_vendors).tolist()
+AVAILABLE_LABELS = list(np.arange(0, vol_loader.dataset.num_vendors))
 print(f"Number of vendors: {AVAILABLE_LABELS}")
 
 # Define the networks
@@ -58,8 +56,11 @@ task_criterion, task_weights_criterion, task_multiclass_criterion = get_criterio
 
 # Define Optimizers
 #####################################################
-g_optimizer = torch.optim.Adam(chain(segmentator.parameters(), generator.parameters()), lr=args.lr, betas=(0.5, 0.999))
-d_optimizer = torch.optim.Adam(discriminator.parameters(), lr=args.lr, betas=(0.5, 0.999))
+g_optimizer = torch.optim.Adam([
+    {"params": segmentator.parameters(), "lr": args.segmentator_lr},
+    {"params": generator.parameters(), "lr": args.generator_lr},
+], betas=(0.5, 0.999))
+d_optimizer = torch.optim.Adam(discriminator.parameters(), lr=args.discriminator_lr, betas=(0.5, 0.999))
 
 g_lr_scheduler = torch.optim.lr_scheduler.LambdaLR(
     g_optimizer, lr_lambda=LambdaLR(args.epochs, 0, args.decay_epoch).step
@@ -81,8 +82,6 @@ print("\n\n --- START TRAINING --\n")
 # wandb.watch(discriminator)
 
 for epoch in range(args.epochs):
-
-    lr = g_optimizer.param_groups[0]['lr']
 
     epoch_gen_loss, epoch_dis_loss = [], []
 
@@ -121,11 +120,6 @@ for epoch in range(args.epochs):
         pred_x = segmentator(vol_x)
         pred_u = segmentator(vol_u)
 
-        if args.use_original_mask:
-            for mask_index, mask in enumerate(inestable_mask):
-                if mask is not None:
-                    pred_x[mask_index] = F.one_hot(mask.squeeze().to(torch.int64), 4).permute(2, 0, 1).cuda()
-
         # --- Task Loss ---
         if not all(m is None for m in inestable_mask):
             original_masks = torch.vstack([imask for imask in inestable_mask if imask is not None]).to(pred_x.device)
@@ -140,7 +134,7 @@ for epoch in range(args.epochs):
             task_loss_u = calculate_loss(
                 original_masks, torch.index_select(pred_u, 0, masked_indices),
                 task_criterion, task_weights_criterion, task_multiclass_criterion, num_classes
-            ) * linear_rampup(args.epochs, epoch+1, args.task_loss_u_coef)
+            ) * linear_rampup(args.epochs, epoch + 1, args.task_loss_u_coef)
 
             task_loss = task_loss_x + task_loss_u
         else:
@@ -240,10 +234,10 @@ for epoch in range(args.epochs):
 
         label_size = np.prod(list(vol_x_original_label_rfield.shape))
         vol_x_vendor_acc.append(
-            (torch.sum((vol_label_x) == vol_x_original_label_rfield.squeeze()) / label_size).item()
+            (torch.sum(torch.tensor(vol_label_x == vol_x_original_label_rfield.squeeze())) / label_size).item()
         )
         vol_u_vendor_acc.append(
-            (torch.sum((vol_label_u) == vol_x_original_label_rfield.squeeze()) / label_size).item()
+            (torch.sum(torch.tensor(vol_label_u == vol_x_original_label_rfield.squeeze())) / label_size).item()
         )
 
         if args.realfake_coef > 0:
@@ -282,31 +276,33 @@ for epoch in range(args.epochs):
         )
         logging["Generated Examples"] = generated_samples
 
-    vol_x_vendor_acc, vol_u_vendor_acc = np.array(vol_x_vendor_acc).mean(), np.array(vol_u_vendor_acc).mean()
+    vol_x_vendor_acc, vol_u_vendor_acc = np.mean(vol_x_vendor_acc), np.mean(vol_u_vendor_acc)
     dis_metrics = f"X Vendor Acc: {vol_x_vendor_acc:.4f} | U Vendor Acc: {vol_u_vendor_acc:.4f}"
     logging["Vendor X Acc"] = vol_x_vendor_acc
     logging["Vendor U Acc"] = vol_u_vendor_acc
 
     if args.realfake_coef > 0:
-        vol_x_realfake_acc = np.array(vol_x_realfake_acc).mean()
-        vol_u_realfake_acc = np.array(vol_u_realfake_acc).mean()
+        vol_x_realfake_acc = np.mean(vol_x_realfake_acc)
+        vol_u_realfake_acc = np.mean(vol_u_realfake_acc)
         dis_metrics += f" | X RealFake Acc: {vol_x_realfake_acc:.4f} | U RealFake Acc: {vol_u_realfake_acc:.4f}"
         logging["RealFake X Acc"] = vol_x_realfake_acc
         logging["RealFake U Acc"] = vol_u_realfake_acc
 
-    seg_metrics = f" Vol X IOU: {np.array(vol_x_iou).mean():.4f} | Vol U IOU: {np.array(vol_u_iou).mean():.4f}"
-    logging["Vol X IOU"] = np.array(vol_x_iou).mean()
-    logging["Vol U IOU"] = np.array(vol_u_iou).mean()
+    seg_metrics = f" Vol X IOU: {np.mean(vol_x_iou):.4f} | Vol U IOU: {np.mean(vol_u_iou):.4f}"
+    logging["Vol X IOU"] = np.mean(vol_x_iou)
+    logging["Vol U IOU"] = np.mean(vol_u_iou)
 
-    epoch_gen_loss, epoch_dis_loss = np.array(epoch_gen_loss).mean(), np.array(epoch_dis_loss).mean()
+    epoch_gen_loss, epoch_dis_loss = np.mean(epoch_gen_loss), np.mean(epoch_dis_loss)
     print(
-        f"Epoch {epoch} | lr: {lr} | Gen Loss: {epoch_gen_loss:.4f} | Dis Loss: {epoch_dis_loss:.4f} "
+        f"Epoch {epoch} | Gen Loss: {epoch_gen_loss:.4f} | Dis Loss: {epoch_dis_loss:.4f} "
         f"| {dis_metrics} | {seg_metrics}"
     )
 
     logging["Generator Loss"] = epoch_gen_loss
     logging["Discriminator Loss"] = epoch_dis_loss
-    logging["Learning Rate"] = lr
+    logging["Segmentator Learning Rate"] = g_optimizer.param_groups[0]['lr']
+    logging["Generator Learning Rate"] = g_optimizer.param_groups[1]['lr']
+    logging["Discriminator Learning Rate"] = d_optimizer.param_groups[0]['lr']
 
     # ---- Checkpoint ----
     torch.save(
@@ -322,14 +318,14 @@ for epoch in range(args.epochs):
     )
 
     # Intermediate losses
-    logging["Discriminator RealFake Loss"] = np.array(epoch_dis_realfake_loss).mean()
-    logging["Discriminator X-VendorLabel Loss"] = np.array(epoch_dis_xlabel_loss).mean()
-    logging["Discriminator U-VendorLabel Loss"] = np.array(epoch_dis_ulabel_loss).mean()
-    logging["Segmentator X-Task Loss"] = np.array(epoch_seg_xtask_loss).mean()
-    logging["Segmentator U-Task Loss"] = np.array(epoch_seg_utask_loss).mean()
-    logging["Generator Cycle Loss"] = np.array(epoch_gen_cycle_loss).mean()
-    logging["Generator U-VendorLabel Loss"] = np.array(epoch_gen_ulabel_loss).mean()
-    logging["Generator U-Fake Loss"] = np.array(epoch_gen_ufake_loss).mean()
+    logging["Discriminator RealFake Loss"] = np.mean(epoch_dis_realfake_loss)
+    logging["Discriminator X-VendorLabel Loss"] = np.mean(epoch_dis_xlabel_loss)
+    logging["Discriminator U-VendorLabel Loss"] = np.mean(epoch_dis_ulabel_loss)
+    logging["Segmentator X-Task Loss"] = np.mean(epoch_seg_xtask_loss)
+    logging["Segmentator U-Task Loss"] = np.mean(epoch_seg_utask_loss)
+    logging["Generator Cycle Loss"] = np.mean(epoch_gen_cycle_loss)
+    logging["Generator U-VendorLabel Loss"] = np.mean(epoch_gen_ulabel_loss)
+    logging["Generator U-Fake Loss"] = np.mean(epoch_gen_ufake_loss)
 
     # Logging
 

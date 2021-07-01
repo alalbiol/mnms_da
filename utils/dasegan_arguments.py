@@ -20,7 +20,9 @@ parser.add_argument('--output_dir', type=str, help='Where progress/checkpoints w
 
 parser.add_argument('--epochs', type=int, default=80, help='Total number epochs for training')
 parser.add_argument('--decay_epoch', type=int, default=60)
-parser.add_argument('--lr', type=float, default=0.0002, help='Learning rate')
+parser.add_argument('--segmentator_lr', type=float, default=0.0002, help='Learning rate')
+parser.add_argument('--generator_lr', type=float, default=0.0002, help='Learning rate')
+parser.add_argument('--discriminator_lr', type=float, default=0.0002, help='Learning rate')
 
 parser.add_argument('--batch_size', type=int, default=64, help='Batch Size for training')
 
@@ -39,6 +41,8 @@ parser.add_argument(
     '--mask_reshape_method', type=str, default="", help='How to resize segmentation predictions.',
     choices=['padd', 'resize']
 )
+
+parser.add_argument('--weighted_sampler', action='store_true', help='If apply weighted sampling or not')
 
 # Networks
 parser.add_argument('--seg_net', type=str, default='resnet18_unet_scratch', help='Model name for Segmentator')
