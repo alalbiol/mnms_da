@@ -234,27 +234,21 @@ for epoch in range(args.epochs):
 
         label_size = np.prod(list(vol_x_original_label_rfield.shape))
         vol_x_vendor_acc.append(
-            (torch.sum(torch.tensor(vol_label_x == vol_x_original_label_rfield.squeeze())) / label_size).item()
+            (torch.sum(vol_label_x == vol_x_original_label_rfield.squeeze()) / label_size).item()
         )
         vol_u_vendor_acc.append(
-            (torch.sum(torch.tensor(vol_label_u == vol_x_original_label_rfield.squeeze())) / label_size).item()
+            (torch.sum(vol_label_u == vol_x_original_label_rfield.squeeze()) / label_size).item()
         )
 
         if args.realfake_coef > 0:
             vol_x_realfake_acc.append(
                 (torch.sum(
-                    torch.tensor(
-                        (torch.sigmoid(vol_real_label_x) > 0.5) == torch.ones_like(vol_real_label_x),
-                        dtype=torch.uint8
-                    )
+                    (torch.sigmoid(vol_real_label_x) > 0.5) == torch.ones_like(vol_real_label_x),
                 ) / label_size).item()
             )
             vol_u_realfake_acc.append(
                 (torch.sum(
-                    torch.tensor(
-                        (torch.sigmoid(vol_fake_label_u) > 0.5) == torch.zeros_like(vol_real_label_x),
-                        dtype=torch.uint8
-                    )
+                    (torch.sigmoid(vol_fake_label_u) > 0.5) == torch.zeros_like(vol_real_label_x)
                 ) / label_size).item()
             )
 
