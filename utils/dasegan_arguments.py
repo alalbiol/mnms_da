@@ -87,6 +87,8 @@ parser.add_argument('--rand_histogram_matching', action='store_true', help='Appl
 
 parser.add_argument('--unique_id', type=str, required=True, help='Unique identifier for current run')
 
+parser.add_argument('--evaluate', action='store_true', help='Whether evaluate using test partition or not')
+
 args = parser.parse_args()
 
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
