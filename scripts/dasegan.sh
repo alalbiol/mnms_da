@@ -83,7 +83,7 @@ python3 -u dasegan.py --gpu $gpu --seed $seed  --output_dir "$output_dir" \
 --vendor_label_coef $vendor_label_coef --plot_examples --rfield_method $rfield_method \
 --no_dropout --unique_id "$unique_id" \
 --dis_labels_criterion $dis_labels_criterion --dis_realfake_criterion $dis_realfake_criterion \
---task_criterion $task_criterion --task_weights_criterion "$task_weights_criterion"
+--task_criterion $task_criterion --task_weights_criterion "$task_weights_criterion" --evaluate
 
 
 done
