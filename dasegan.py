@@ -5,10 +5,12 @@ import wandb
 # ---- My utils ----
 from models import model_selector
 from models.gan import define_Gen, define_Dis
+from tools.metrics_mnms import compute_metrics_on_directories
 from utils.dasegan_arguments import *
 from utils.data_augmentation import data_augmentation_selector
 from utils.datasets import dataset_selector
 from utils.logging import get_name
+from utils.mnms import test_prediction
 from utils.neural import *
 from utils.gans import *
 
@@ -241,12 +243,18 @@ for epoch in range(args.epochs):
         if args.realfake_coef > 0:
             vol_x_realfake_acc.append(
                 (torch.sum(
-                    (torch.sigmoid(vol_real_label_x) > 0.5) == torch.ones_like(vol_real_label_x)
+                    torch.tensor(
+                        (torch.sigmoid(vol_real_label_x) > 0.5) == torch.ones_like(vol_real_label_x),
+                        dtype=torch.uint8
+                    )
                 ) / label_size).item()
             )
             vol_u_realfake_acc.append(
                 (torch.sum(
-                    (torch.sigmoid(vol_fake_label_u) > 0.5) == torch.zeros_like(vol_real_label_x)
+                    torch.tensor(
+                        (torch.sigmoid(vol_fake_label_u) > 0.5) == torch.zeros_like(vol_real_label_x),
+                        dtype=torch.uint8
+                    )
                 ) / label_size).item()
             )
 
@@ -333,5 +341,30 @@ for epoch in range(args.epochs):
     # -- Update learning rates --
     g_lr_scheduler.step()
     d_lr_scheduler.step()
+
+
+if args.evaluate:
+    remove_predictions = True
+    path_gt = "data/MMs/Testing"
+    args.output_dir = os.path.join(args.output_dir, "EVALUATION")
+    # -------------------------------------------------------------------------------------------------
+    print("\n\nStart Model Raw Evaluation...")
+    test_prediction(args, segmentator, None)
+    path_pred = os.path.join(args.output_dir, "test_predictions_raw")
+    test_model_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
+    wandb.log({"Model Test Metrics By Centre": wandb.Table(
+        dataframe=test_model_df.groupby(['Centre']).mean().reset_index())
+    })
+    wandb.save(os.path.join(path_pred, "*.csv"))
+    # -------------------------------------------------------------------------------------------------
+    print("\n\nStart Model with Generator Evaluation...")
+    test_prediction(args, segmentator, generator)
+    path_pred = os.path.join(args.output_dir, "test_predictions_with_generator")
+    test_model_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
+    wandb.log({"Model Test Metrics By Centre": wandb.Table(
+        dataframe=test_model_df.groupby(['Centre']).mean().reset_index())
+    })
+    wandb.save(os.path.join(path_pred, "*.csv"))
+
 
 wandb.finish()

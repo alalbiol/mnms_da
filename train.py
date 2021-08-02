@@ -135,7 +135,7 @@ if args.evaluate:
     original_output_dir = args.output_dir
 
     print("\n\nStart Model Test Prediction...")
-    args.output_dir = os.path.join(original_output_dir, "RESULTS")
+    args.output_dir = os.path.join(original_output_dir, "EVALUATION")
     test_prediction(args, model, generator)
     print("Finish!")
     path_pred = os.path.join(args.output_dir, "test_predictions")
@@ -147,7 +147,7 @@ if args.evaluate:
 
     if swa_model is not None:
         print("\n\nStart SWA Model Test Prediction...")
-        args.output_dir = os.path.join(original_output_dir, "SWA_RESULTS")
+        args.output_dir = os.path.join(original_output_dir, "SWA_EVALUATION")
         test_prediction(args, swa_model, generator)
         print("Finish!")
         path_pred = os.path.join(args.output_dir, "test_predictions")
