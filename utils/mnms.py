@@ -12,7 +12,7 @@ from utils.general import binarize_volume_prediction, plot_save_pred_volume
 def test_prediction(args, model=None, generator=None):
 
     os.makedirs(os.path.join(args.output_dir, "test_predictions"), exist_ok=True)
-    if args.generated_overlays > 0:
+    if hasattr(args, 'generated_overlays') and args.generated_overlays > 0:
         os.makedirs(os.path.join(args.output_dir, "overlays", "test_evaluation"), exist_ok=True)
 
     _, _, val_aug = data_augmentation_selector(
@@ -65,7 +65,7 @@ def test_prediction(args, model=None, generator=None):
                 pred_es, img_affine, img_header
             )
 
-            if args.generated_overlays > 0:
+            if hasattr(args, 'generated_overlays') and args.generated_overlays > 0:
                 plot_save_pred_volume(
                     original_ed, pred_ed, os.path.join(args.output_dir, "overlays", "test_evaluation"),
                     "{}_ed".format(img_id)
