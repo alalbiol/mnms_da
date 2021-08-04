@@ -372,7 +372,7 @@ def compute_metrics_on_directories(dir_gt, dir_pred, remove_preds, get_df=False)
     print("\nComputing Directory Metrics...")
     print(f"Ground truth dir: {dir_gt}")
     print(f"Preds dir: {dir_pred}")
-    info = pd.read_csv(os.path.join("../data/MMs", 'volume_info.csv'))
+    info = pd.read_csv(os.path.join("data/MMs", 'volume_info.csv'))
     lst_pred = sorted(glob.glob(os.path.join(dir_pred, '**', '*sa_E?.nii.gz'), recursive=True), key=natural_order)
     lst_gt = sorted(glob.glob(os.path.join(dir_gt, '**', '*sa_E?_gt.nii.gz'), recursive=True), key=natural_order)
 

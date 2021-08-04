@@ -340,22 +340,26 @@ for epoch in range(args.epochs):
 if args.evaluate:
     remove_predictions = True
     path_gt = "data/MMs/Testing"
-    args.output_dir = os.path.join(args.output_dir, "EVALUATION")
+    original_output_dir = args.output_dir
+
     # -------------------------------------------------------------------------------------------------
     print("\n\nStart Model Raw Evaluation...")
+    args.output_dir = os.path.join(original_output_dir, "RAW_EVALUATION")
     test_prediction(args, segmentator, None)
-    path_pred = os.path.join(args.output_dir, "test_predictions_raw")
+    path_pred = os.path.join(args.output_dir, "test_predictions")
     test_model_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
-    wandb.log({"Model Test Metrics By Centre": wandb.Table(
+    wandb.log({"Raw Model Test Metrics By Centre Without Generator": wandb.Table(
         dataframe=test_model_df.groupby(['Centre']).mean().reset_index())
     })
     wandb.save(os.path.join(path_pred, "*.csv"))
+
     # -------------------------------------------------------------------------------------------------
     print("\n\nStart Model with Generator Evaluation...")
+    args.output_dir = os.path.join(original_output_dir, "RAW_EVALUATION_GENERATOR")
     test_prediction(args, segmentator, generator)
-    path_pred = os.path.join(args.output_dir, "test_predictions_with_generator")
+    path_pred = os.path.join(args.output_dir, "test_predictions")
     test_model_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
-    wandb.log({"Model Test Metrics By Centre": wandb.Table(
+    wandb.log({"Raw Model Test Metrics By Centre With Generator": wandb.Table(
         dataframe=test_model_df.groupby(['Centre']).mean().reset_index())
     })
     wandb.save(os.path.join(path_pred, "*.csv"))
