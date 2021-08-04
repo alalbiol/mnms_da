@@ -73,6 +73,11 @@ parser.add_argument('--seg_checkpoint', type=str, default="", help='If there is 
 parser.add_argument('--dis_checkpoint', type=str, default="", help='If there is a discriminator checkpoint to load')
 parser.add_argument('--gen_checkpoint', type=str, default="", help='If there is a generator checkpoint to load')
 
+parser.add_argument(
+    '--data_sampling', type=str, default="random_sampler", help='How to sample data points',
+    choices=['random_sampler', 'equilibrated_sampler']
+)
+
 # Tasks weights
 parser.add_argument('--cycle_coef', type=float, default=0.5)
 parser.add_argument('--vendor_label_coef', type=float, default=1)

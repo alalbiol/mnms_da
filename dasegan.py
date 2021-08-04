@@ -23,7 +23,7 @@ train_aug, train_aug_img, val_aug = data_augmentation_selector(
     args.data_augmentation, args.img_size, args.crop_size, args.mask_reshape_method
 )
 vol_loader, val_vols, num_classes, class_to_cat, include_background = dataset_selector(
-    train_aug, train_aug_img, val_aug, args, sampler="weighted_sampler"
+    train_aug, train_aug_img, val_aug, args, sampler=args.data_sampling
 )
 
 print(f"Number of segmentator classes: {num_classes}")

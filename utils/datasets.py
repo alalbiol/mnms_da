@@ -772,7 +772,7 @@ def dataset_selector(train_aug, train_aug_img, val_aug, args, is_test=False, sam
 
     elif len(train_datasets) == 1 and len(val_datasets) == 1:
 
-        if sampler == "weighted_sampler":
+        if sampler == "equilibrated_sampler":
             dataset_labeled_info = np.array(train_datasets[0].data["Labeled"].astype(np.int32))
             weights = np.bincount(dataset_labeled_info)  # occurences per class
             weights[weights == 0] = 1  # replace empty bins with 1
@@ -786,11 +786,13 @@ def dataset_selector(train_aug, train_aug_img, val_aug, args, is_test=False, sam
                 train_datasets[0], batch_size=args.batch_size, pin_memory=True,
                 collate_fn=train_datasets[0].custom_collate, sampler=wsampler
             )
-        else:
+        elif sampler == "random_sampler":
             train_loader = DataLoader(
                 train_datasets[0], batch_size=args.batch_size, pin_memory=True,
                 collate_fn=train_datasets[0].custom_collate, shuffle=True
             )
+        else:
+            assert False, f"Unknown data sampler: '{sampler}'"
         val_loader = DataLoader(
             val_datasets[0], batch_size=args.batch_size, shuffle=False, pin_memory=True,
             drop_last=False, collate_fn=val_datasets[0].custom_collate
