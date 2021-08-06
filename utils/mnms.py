@@ -21,6 +21,7 @@ def test_prediction(args, model=None, generator=None):
     test_loader = dataset_selector(_, _, val_aug, args, is_test=True)
 
     if model is None:
+        print("\n[WARNING] Test evaluation using a Random Model!\n")
         model = model_selector(
             args.problem_type, args.model_name, test_loader.dataset.num_classes, from_swa=args.swa_checkpoint,
             in_channels=3 if args.add_depth else 1, devices=args.gpu, checkpoint=args.model_checkpoint

@@ -69,6 +69,10 @@ parser.add_argument('--no_dropout', action='store_true', help='no dropout for th
 parser.add_argument('--ngf', type=int, default=64, help='# of generator filters in first conv layer')
 parser.add_argument('--ndf', type=int, default=64, help='# of discriminator filters in first conv layer')
 
+parser.add_argument(
+    '--dasegan_checkpoint', type=str, default="",
+    help='Checkpoint with segmentator, generator and discriminator to load'
+)
 parser.add_argument('--seg_checkpoint', type=str, default="", help='If there is a segmentator checkpoint to load')
 parser.add_argument('--dis_checkpoint', type=str, default="", help='If there is a discriminator checkpoint to load')
 parser.add_argument('--gen_checkpoint', type=str, default="", help='If there is a generator checkpoint to load')

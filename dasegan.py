@@ -46,6 +46,13 @@ segmentator = model_selector(
     in_channels=3 if args.add_depth else 1, devices=args.gpu, checkpoint=args.seg_checkpoint
 )
 
+if args.dasegan_checkpoint:
+    print(f"\nLoading DaSeGAN checkpoint {args.dasegan_checkpoint}...\n")
+    dasegan_checkpoint = torch.load(args.dasegan_checkpoint)
+    generator.load_state_dict(dasegan_checkpoint["generator"])
+    discriminator.load_state_dict(dasegan_checkpoint["discriminator"])
+    segmentator.load_state_dict(dasegan_checkpoint["segmentator"])
+
 # Define Loss criterion
 dis_labels_criterion = get_loss(args.dis_labels_criterion)
 dis_realfake_criterion = get_loss(args.dis_realfake_criterion)

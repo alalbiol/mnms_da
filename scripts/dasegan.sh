@@ -31,6 +31,7 @@ ngf=64
 ndf=64
 
 #seg_checkpoint=""
+dasegan_checkpoint=""
 seg_checkpoint="checks/segmentator/tanh_seg_256_singlec/model.pt"
 dis_checkpoint=""
 gen_checkpoint=""
