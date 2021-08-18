@@ -26,7 +26,7 @@ train_aug, train_aug_img, val_aug = data_augmentation_selector(
     args.data_augmentation, args.img_size, args.crop_size, args.mask_reshape_method
 )
 train_loader, val_loader, num_classes, class_to_cat, include_background = dataset_selector(
-    train_aug, train_aug_img, val_aug, args
+    train_aug, train_aug_img, val_aug, args, sampler="random_sampler",
 )
 train_coral_loader = coral_dataset_selector(train_aug, train_aug_img, "Training", args) if args.coral else None
 val_coral_loader = coral_dataset_selector(val_aug, [], "Validation", args) if args.coral else None
