@@ -43,8 +43,10 @@ mask_reshape_method="padd"  # padd - resize
 criterion="bce_dice"
 weights_criterion="0.4, 0.5, 0.1"
 
-output_dir="results/$dataset/$model/$optimizer/${scheduler}_lr${lr}/${criterion}_weights${weights_criterion}"
-output_dir="$output_dir/normalization_${normalization}/da${data_augmentation}"
+unique_id=$(uuidgen)
+
+output_dir="results/$dataset/${unique_id}/$model/$optimizer/${scheduler}_lr${lr}"
+output_dir="$output_dir/${criterion}_weights${weights_criterion}/normalization_${normalization}/da${data_augmentation}"
 
 #generated_overlays=0
 #  --generated_overlays $generated_overlays --add_depth --rand_histogram_matching
@@ -53,7 +55,7 @@ python3 -u train.py --gpu $gpu --dataset $dataset --model_name $model --img_size
 --scheduler $scheduler --learning_rate $lr --swa_lr $swa_lr --optimizer $optimizer --criterion $criterion \
 --normalization $normalization --weights_criterion "$weights_criterion" --data_augmentation $data_augmentation \
 --output_dir "$output_dir" --metrics iou dice --problem_type $problem_type --mask_reshape_method $mask_reshape_method \
---scheduler_steps 70 100 \
+--scheduler_steps 70 100 --unique_id "$unique_id" \
 --evaluate
 
 ##################################################
