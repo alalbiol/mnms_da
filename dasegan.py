@@ -156,7 +156,7 @@ for epoch in range(args.epochs):
         random_labels = get_random_labels(vol_x_original_label, AVAILABLE_LABELS)
         random_labels = labels2rfield(
             method=args.rfield_method, shape=vol_vendor_label_u.shape,
-            label_range=(0, len(AVAILABLE_LABELS) + 1), labels=random_labels
+            label_range=(0, len(AVAILABLE_LABELS)), labels=random_labels
         ).to(vol_vendor_label_u.device)
 
         vendor_label_loss_u = dis_labels_criterion(vol_vendor_label_u, random_labels) * args.vendor_label_coef
