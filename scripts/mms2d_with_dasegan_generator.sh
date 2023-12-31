@@ -114,5 +114,5 @@ python3 -u predict.py --gpu $gpu --dataset $dataset --model_name $model --img_si
 python3 -u tools/metrics_mnms.py --GT_IMG "data/MMs/Testing" --PRED_IMG "$eval_dir/test_predictions"  # --REMOVE_PREDS
 
 ##################################################
-python tools/notify.py --msg "Experiments Finished"
+#python tools/notify.py --msg "Experiments Finished"
 ##################################################

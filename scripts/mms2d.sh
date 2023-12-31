@@ -9,7 +9,7 @@ problem_type="segmentation"
 #   -> small_segmentation_unet - small_segmentation_small_unet
 #      small_segmentation_extrasmall_unet - small_segmentation_nano_unet
 #   -> resnet18_pspnet_unet - resnet34_pspnet_unet
-model="resnet18_unet_scratch"
+model="resnet34_unet_scratch_scse_hypercols"
 
 img_size=256
 crop_size=256
@@ -33,7 +33,7 @@ optimizer="adam"
 # "scale" - "optical_distortion" - "coarse_dropout" or "cutout" - "downscale"
 data_augmentation="mms2d"
 
-normalization="negative1_positive1"  # reescale - standardize - standardize_full_vol - standardize_phase
+normalization="negative1_positive1"  # negative1_positive1 - reescale - standardize - standardize_full_vol - standardize_phase
 mask_reshape_method="padd"  # padd - resize
 
 # Available criterions:
@@ -59,5 +59,5 @@ python3 -u train.py --gpu $gpu --dataset $dataset --model_name $model --img_size
 --evaluate
 
 ##################################################
-python tools/notify.py --msg "Experiments Finished"
+#python tools/notify.py --msg "Experiments Finished"
 ##################################################

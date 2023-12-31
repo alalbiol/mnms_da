@@ -72,7 +72,6 @@ wandb.init(project="MnMs Segmentation", name=get_name(args.unique_id), config=ar
 
 header, defrosted = build_header(class_to_cat, full_criterion, args.metrics, display=True), False
 for current_epoch in range(args.epochs):
-
     defrosted = check_defrost(model, defrosted, current_epoch, args.defrost_epoch)
 
     train_metrics = train_step(
@@ -128,8 +127,7 @@ if swa_model is not None:
     wandb.save(checkpoint_path)
 
 if args.evaluate:
-
-    remove_predictions = True
+    remove_predictions = False
 
     path_gt = "data/MMs/Testing"
     original_output_dir = args.output_dir
@@ -140,8 +138,11 @@ if args.evaluate:
     print("Finish!")
     path_pred = os.path.join(args.output_dir, "test_predictions")
     test_model_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
+    numeric_cols = list(test_model_df.select_dtypes(include='number').columns)
+    numeric_cols.remove("Centre")
+    
     wandb.log({"Model Test Metrics By Centre": wandb.Table(
-        dataframe=test_model_df.groupby(['Centre']).mean().reset_index())
+        dataframe=test_model_df.groupby(['Centre'])[numeric_cols].mean().reset_index())
     })
     wandb.save(os.path.join(path_pred, "*.csv"))
 
@@ -152,8 +153,10 @@ if args.evaluate:
         print("Finish!")
         path_pred = os.path.join(args.output_dir, "test_predictions")
         test_model_swa_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
+        numeric_cols = list(test_model_df.select_dtypes(include='number').columns)
+        numeric_cols.remove("Centre")
         wandb.log({"SWA Model Test Metrics By Centre": wandb.Table(
-            dataframe=test_model_swa_df.groupby(['Centre']).mean().reset_index()
+            dataframe=test_model_swa_df.groupby(['Centre'])[numeric_cols].mean().reset_index()
         )})
         wandb.save(os.path.join(path_pred, "*.csv"))
 

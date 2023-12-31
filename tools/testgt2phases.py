@@ -77,7 +77,7 @@ def natural_order(sord):
     return [conv_int(c) for c in re.split(r'(\d+)', sord)]
 
 
-info = pd.read_csv(os.path.join("data/MMs", 'volume_info.csv'))
+info = pd.read_csv(os.path.join("data/MMs", '211230_M&Ms_Dataset_information_diagnosis_opendataset.csv'))
 dir_gt = "data/MMs/Testing/"
 lst_gt = sorted(glob.glob(os.path.join(dir_gt, '**', '*sa_gt.nii.gz'), recursive=True), key=natural_order)
 

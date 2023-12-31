@@ -210,7 +210,7 @@ class ResUnet(nn.Module):
             for param in self.resnet.parameters():  # Frost model
                 param.requires_grad = False
 
-        self.resnet.conv1 = torch.nn.Conv1d(in_channels, 64, (7, 7), (2, 2), (3, 3), bias=False)
+        self.resnet.conv1 = torch.nn.Conv2d(in_channels, 64, (7, 7), (2, 2), (3, 3), bias=False)
 
         self.conv1 = nn.Sequential(
             self.resnet.conv1,

@@ -81,8 +81,8 @@ def mod_dc(result, reference):
     -----
     This is a real metric. The binary images can therefore be supplied in any order.
     """
-    result = np.atleast_1d(result.astype(np.bool))
-    reference = np.atleast_1d(reference.astype(np.bool))
+    result = np.atleast_1d(result.astype(bool))
+    reference = np.atleast_1d(reference.astype(bool))
 
     intersection = np.count_nonzero(result & reference)
 
@@ -102,8 +102,8 @@ def mod_jc(result, reference):
     r"""
     Jaccard index
     """
-    result = np.atleast_1d(result.astype(np.bool))
-    reference = np.atleast_1d(reference.astype(np.bool))
+    result = np.atleast_1d(result.astype(bool))
+    reference = np.atleast_1d(reference.astype(bool))
 
     intersection = np.count_nonzero(result & reference)
     union = np.count_nonzero(result | reference)
@@ -385,8 +385,11 @@ def compute_metrics_on_directories(dir_gt, dir_pred, remove_preds, get_df=False)
     print(f"lst_pred: {len(lst_pred)}")
     print(f"lst_gt: {len(lst_gt)}")
     for indx, (p_gt, p_pred) in enumerate(zip(lst_gt, lst_pred)):
-        # print('> Evaluate image:', p_pred)
-        # print('  Against gt:', p_gt)
+        print('> Evaluate image:', p_pred)
+        print('  Against gt:', p_gt)
+        if indx > 10:
+            print("Debug only a few images")
+            break
 
         gt, _, header = load_nii(p_gt)
         pred, _, _ = load_nii(p_pred)
@@ -425,8 +428,11 @@ def compute_metrics_on_directories(dir_gt, dir_pred, remove_preds, get_df=False)
     res = [[n, ] + r for r, n in zip(res, lst_name_gt)]
     df = pd.DataFrame(res, columns=HEADER)
     df.to_csv(os.path.join(dir_pred, "results_{}.csv".format(time.strftime("%Y%m%d_%H%M"))), index=False)
-    print(df.groupby(['Centre']).mean().reset_index())
-
+    
+    #group by centre and calculate mean only for numeric columns
+    numeric_cols = list(df.select_dtypes(include='number').columns)
+    numeric_cols.remove("Centre")
+   
     # Anonymised df for participants
     adf = pd.read_csv(os.path.join(dir_pred, "results_{}.csv".format(time.strftime("%Y%m%d_%H%M"))))
     adf.sample(frac=1).iloc[:, 1:].to_csv(os.path.join(dir_pred, "results_anonymized.csv"), index=False)
