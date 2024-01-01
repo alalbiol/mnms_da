@@ -44,7 +44,6 @@ criterion="bce_dice"
 weights_criterion="0.4, 0.5, 0.1"
 
 unique_id=$(uuidgen)
-unique_id="412c0a3f-5de6-493d-8373-715d93f84f9d"
 
 output_dir="results/$dataset/${unique_id}/$model/$optimizer/${scheduler}_lr${lr}"
 output_dir="$output_dir/${criterion}_weights${weights_criterion}/normalization_${normalization}/da${data_augmentation}"
