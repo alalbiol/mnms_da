@@ -145,6 +145,13 @@ if args.evaluate:
         dataframe=test_model_df.groupby(['Centre'])[numeric_cols].mean().reset_index())
     })
     wandb.save(os.path.join(path_pred, "*.csv"))
+    
+    numeric_cols = list(test_model_df.select_dtypes(include='number').columns) 
+    wandb.log({"Model Test Metrics By Vendor": wandb.Table(
+        dataframe=test_model_df.groupby(['Vendor'])[numeric_cols].mean().reset_index())
+    })
+    wandb.save(os.path.join(path_pred, "*.csv"))
+
 
     if swa_model is not None:
         print("\n\nStart SWA Model Test Prediction...")
@@ -158,6 +165,12 @@ if args.evaluate:
         wandb.log({"SWA Model Test Metrics By Centre": wandb.Table(
             dataframe=test_model_swa_df.groupby(['Centre'])[numeric_cols].mean().reset_index()
         )})
+        wandb.save(os.path.join(path_pred, "*.csv"))
+
+        numeric_cols = list(test_model_df.select_dtypes(include='number').columns) 
+        wandb.log({"SWA Model Test Metrics By Vendor": wandb.Table(
+            dataframe=test_model_df.groupby(['Vendor'])[numeric_cols].mean().reset_index())
+        })   
         wandb.save(os.path.join(path_pred, "*.csv"))
 
 wandb.finish()

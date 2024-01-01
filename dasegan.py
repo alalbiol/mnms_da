@@ -345,7 +345,7 @@ for epoch in range(args.epochs):
 
 
 if args.evaluate:
-    remove_predictions = True
+    remove_predictions = False
     path_gt = "data/MMs/Testing"
     original_output_dir = args.output_dir
 
@@ -355,8 +355,17 @@ if args.evaluate:
     test_prediction(args, segmentator, None)
     path_pred = os.path.join(args.output_dir, "test_predictions")
     test_model_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
+    
+    numeric_cols = list(test_model_df.select_dtypes(include='number').columns)
+    numeric_cols.remove("Centre")
     wandb.log({"Raw Model Test Metrics By Centre Without Generator": wandb.Table(
-        dataframe=test_model_df.groupby(['Centre']).mean().reset_index())
+        dataframe=test_model_df.groupby(['Centre'])[numeric_cols].mean().reset_index())
+    })
+    wandb.save(os.path.join(path_pred, "*.csv"))
+    
+    numeric_cols = list(test_model_df.select_dtypes(include='number').columns) 
+    wandb.log({"Raw Model Test Metrics By Vendor  Without Generator": wandb.Table(
+        dataframe=test_model_df.groupby(['Vendor'])[numeric_cols].mean().reset_index())
     })
     wandb.save(os.path.join(path_pred, "*.csv"))
 
@@ -366,10 +375,17 @@ if args.evaluate:
     test_prediction(args, segmentator, generator)
     path_pred = os.path.join(args.output_dir, "test_predictions")
     test_model_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
+    numeric_cols = list(test_model_df.select_dtypes(include='number').columns)
+    numeric_cols.remove("Centre")
     wandb.log({"Raw Model Test Metrics By Centre With Generator": wandb.Table(
-        dataframe=test_model_df.groupby(['Centre']).mean().reset_index())
+        dataframe=test_model_df.groupby(['Centre'])[numeric_cols].mean().reset_index())
     })
     wandb.save(os.path.join(path_pred, "*.csv"))
-
+    
+    numeric_cols = list(test_model_df.select_dtypes(include='number').columns) 
+    wandb.log({"Raw Model Test Metrics By Vendor  With Generator": wandb.Table(
+        dataframe=test_model_df.groupby(['Vendor'])[numeric_cols].mean().reset_index())
+    })
+    wandb.save(os.path.join(path_pred, "*.csv"))
 
 wandb.finish()

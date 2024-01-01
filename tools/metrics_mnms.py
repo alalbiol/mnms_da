@@ -387,9 +387,6 @@ def compute_metrics_on_directories(dir_gt, dir_pred, remove_preds, get_df=False)
     for indx, (p_gt, p_pred) in enumerate(zip(lst_gt, lst_pred)):
         print('> Evaluate image:', p_pred)
         print('  Against gt:', p_gt)
-        if indx > 10:
-            print("Debug only a few images")
-            break
 
         gt, _, header = load_nii(p_gt)
         pred, _, _ = load_nii(p_pred)
