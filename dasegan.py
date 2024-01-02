@@ -358,16 +358,24 @@ if args.evaluate:
     
     numeric_cols = list(test_model_df.select_dtypes(include='number').columns)
     numeric_cols.remove("Centre")
+    dataframe = test_model_df.groupby(['Centre'])[numeric_cols].mean().reset_index()
+    print("Raw Model Test Metrics By Centre")
+    print(dataframe)
+    dataframe.to_csv(os.path.join(path_pred, "raw_test_metrics_by_centre.csv"), index=False)
     wandb.log({"Raw Model Test Metrics By Centre Without Generator": wandb.Table(
-        dataframe=test_model_df.groupby(['Centre'])[numeric_cols].mean().reset_index())
+        dataframe=dataframe)
     })
-    wandb.save(os.path.join(path_pred, "*.csv"))
+    #wandb.save(os.path.join(path_pred, "*.csv"))
     
     numeric_cols = list(test_model_df.select_dtypes(include='number').columns) 
+    dataframe = test_model_df.groupby(['Vendor'])[numeric_cols].mean().reset_index()
+    print("Raw Model Test Metrics By Vendor")
+    print(dataframe)
+    dataframe.to_csv(os.path.join(path_pred, "raw_test_metrics_by_vendor.csv"), index=False)
     wandb.log({"Raw Model Test Metrics By Vendor  Without Generator": wandb.Table(
-        dataframe=test_model_df.groupby(['Vendor'])[numeric_cols].mean().reset_index())
+        dataframe=dataframe)
     })
-    wandb.save(os.path.join(path_pred, "*.csv"))
+    #wandb.save(os.path.join(path_pred, "*.csv"))
 
     # -------------------------------------------------------------------------------------------------
     print("\n\nStart Model with Generator Evaluation...")
@@ -377,15 +385,23 @@ if args.evaluate:
     test_model_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
     numeric_cols = list(test_model_df.select_dtypes(include='number').columns)
     numeric_cols.remove("Centre")
+    dataframe = test_model_df.groupby(['Centre'])[numeric_cols].mean().reset_index()
+    print("Raw Model Test Metrics By Centre with Generator")
+    print(dataframe)
+    dataframe.to_csv(os.path.join(path_pred, "raw_test_metrics_by_centre.csv"), index=False)
     wandb.log({"Raw Model Test Metrics By Centre With Generator": wandb.Table(
-        dataframe=test_model_df.groupby(['Centre'])[numeric_cols].mean().reset_index())
+        dataframe=dataframe)
     })
-    wandb.save(os.path.join(path_pred, "*.csv"))
+    #wandb.save(os.path.join(path_pred, "*.csv"))
     
     numeric_cols = list(test_model_df.select_dtypes(include='number').columns) 
+    dataframe = test_model_df.groupby(['Vendor'])[numeric_cols].mean().reset_index()
+    print("Raw Model Test Metrics By Vendor with Generator")
+    print(dataframe)
+    dataframe.to_csv(os.path.join(path_pred, "raw_test_metrics_by_vendor.csv"), index=False)
     wandb.log({"Raw Model Test Metrics By Vendor  With Generator": wandb.Table(
-        dataframe=test_model_df.groupby(['Vendor'])[numeric_cols].mean().reset_index())
+        dataframe=dataframe)
     })
-    wandb.save(os.path.join(path_pred, "*.csv"))
+    #wandb.save(os.path.join(path_pred, "*.csv"))
 
 wandb.finish()

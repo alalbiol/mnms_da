@@ -140,17 +140,24 @@ if args.evaluate:
     test_model_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
     numeric_cols = list(test_model_df.select_dtypes(include='number').columns)
     numeric_cols.remove("Centre")
-    
+    dataframe = test_model_df.groupby(['Centre'])[numeric_cols].mean().reset_index()
+    print("Model Test Metrics By Centre")
+    print(dataframe)
+    dataframe.to_csv(os.path.join(path_pred, "test_metrics_by_centre.csv"), index=False)
     wandb.log({"Model Test Metrics By Centre": wandb.Table(
-        dataframe=test_model_df.groupby(['Centre'])[numeric_cols].mean().reset_index())
+        dataframe=dataframe)
     })
-    wandb.save(os.path.join(path_pred, "*.csv"))
+    #wandb.save(os.path.join(path_pred, "*.csv"))
     
     numeric_cols = list(test_model_df.select_dtypes(include='number').columns) 
+    dataframe = test_model_df.groupby(['Vendor'])[numeric_cols].mean().reset_index()
+    print("Model Test Metrics By Vendor")
+    print(dataframe)
+    dataframe.to_csv(os.path.join(path_pred, "test_metrics_by_vendor.csv"), index=False)
     wandb.log({"Model Test Metrics By Vendor": wandb.Table(
-        dataframe=test_model_df.groupby(['Vendor'])[numeric_cols].mean().reset_index())
+        dataframe=dataframe)
     })
-    wandb.save(os.path.join(path_pred, "*.csv"))
+    #wandb.save(os.path.join(path_pred, "*.csv"))
 
 
     if swa_model is not None:
@@ -162,15 +169,23 @@ if args.evaluate:
         test_model_swa_df = compute_metrics_on_directories(path_gt, path_pred, remove_predictions, get_df=True)
         numeric_cols = list(test_model_df.select_dtypes(include='number').columns)
         numeric_cols.remove("Centre")
+        dataframe = test_model_swa_df.groupby(['Centre'])[numeric_cols].mean().reset_index()
+        print("SWA Model Test Metrics By Centre")
+        print(dataframe)
+        dataframe.to_csv(os.path.join(path_pred, "swa_test_metrics_by_centre.csv"), index=False)
         wandb.log({"SWA Model Test Metrics By Centre": wandb.Table(
-            dataframe=test_model_swa_df.groupby(['Centre'])[numeric_cols].mean().reset_index()
-        )})
-        wandb.save(os.path.join(path_pred, "*.csv"))
+            dataframe=dataframe)
+        })
+        #wandb.save(os.path.join(path_pred, "*.csv"))
 
         numeric_cols = list(test_model_df.select_dtypes(include='number').columns) 
+        dataframe = test_model_swa_df.groupby(['Vendor'])[numeric_cols].mean().reset_index()
+        print("SWA Model Test Metrics By Vendor")
+        print(dataframe)
+        dataframe.to_csv(os.path.join(path_pred, "swa_test_metrics_by_vendor.csv"), index=False)
         wandb.log({"SWA Model Test Metrics By Vendor": wandb.Table(
-            dataframe=test_model_df.groupby(['Vendor'])[numeric_cols].mean().reset_index())
+            dataframe=dataframe)
         })   
-        wandb.save(os.path.join(path_pred, "*.csv"))
+        #wandb.save(os.path.join(path_pred, "*.csv"))
 
 wandb.finish()
