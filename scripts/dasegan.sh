@@ -1,6 +1,7 @@
 #!/bin/bash
 
-gpu="0,1"
+#gpu="0,1"
+gpu="0"
 seed=42
 
 dataset="mms2d_full_unlabeled_ncl"  # mms2d_unlabeled_ncl - mms2d_full_unlabeled_ncl
@@ -16,7 +17,7 @@ data_augmentation="mms2d"
 
 data_sampling="random_sampler"
 
-seg_net="resnet18_unet_scratch"
+seg_net="resnet34_unet_scratch_scse_hypercols"
 gen_net="my_resnet_9blocks"
 dis_net="n_layers_spectral"
 gen_upsample="interpolation"
@@ -32,7 +33,7 @@ ndf=64
 
 #seg_checkpoint=""
 dasegan_checkpoint=""
-seg_checkpoint="checks/segmentator/tanh_seg_256_singlec/model.pt"
+seg_checkpoint="checks/segmentator/resnet34_unet_scratch_scse_hypercols/model_resnet34_unet_scratch_scse_hypercols_best_dice.pt"
 dis_checkpoint=""
 gen_checkpoint=""
 
@@ -100,5 +101,5 @@ done
 done
 
 ############################################################
-python tools/notify.py --msg "DASEGAN - Experiments Finished"
+#python tools/notify.py --msg "DASEGAN - Experiments Finished"
 ############################################################

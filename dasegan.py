@@ -101,6 +101,7 @@ for epoch in range(args.epochs):
     vol_x_iou, vol_u_iou = [], []
 
     for batch_indx, batch in enumerate(vol_loader):
+        print(f"Batch: {batch_indx} epoch = {epoch}\r", end="", flush=True)
 
         vol_x = batch["image"].cuda()
         # Como utilizamos datos que no tienen porque estar etiquetados, recibimos una lista de labels
@@ -359,7 +360,7 @@ if args.evaluate:
     numeric_cols = list(test_model_df.select_dtypes(include='number').columns)
     numeric_cols.remove("Centre")
     dataframe = test_model_df.groupby(['Centre'])[numeric_cols].mean().reset_index()
-    print("Raw Model Test Metrics By Centre")
+    print("Raw Model Test Metrics By Centre without Generator")
     print(dataframe)
     dataframe.to_csv(os.path.join(path_pred, "raw_test_metrics_by_centre.csv"), index=False)
     wandb.log({"Raw Model Test Metrics By Centre Without Generator": wandb.Table(
@@ -369,7 +370,7 @@ if args.evaluate:
     
     numeric_cols = list(test_model_df.select_dtypes(include='number').columns) 
     dataframe = test_model_df.groupby(['Vendor'])[numeric_cols].mean().reset_index()
-    print("Raw Model Test Metrics By Vendor")
+    print("Raw Model Test Metrics By Vendor without Generator")
     print(dataframe)
     dataframe.to_csv(os.path.join(path_pred, "raw_test_metrics_by_vendor.csv"), index=False)
     wandb.log({"Raw Model Test Metrics By Vendor  Without Generator": wandb.Table(
